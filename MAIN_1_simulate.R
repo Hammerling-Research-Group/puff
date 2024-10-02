@@ -79,20 +79,6 @@ code.start.time <- Sys.time()
 # Read in sensor data csv
 raw.data <- read.csv(raw.sensor.observations.path)
 
-
-##
-## to create random subset for testing (SKIP IF FULL RUN IS DESIRED)
-set.seed(12345)
-
-interval <- interval(start.time, end.time)
-filtered <- raw.data[as.Date(raw.data$time) %within% interval, ]
-start <- sample(1:(nrow(filtered) - 9), 1)
-
-raw.data <- filtered[start:(start + 9), ] # redefine 
-##
-##
-
-
 # Set correct time zone
 raw.data$time <- as_datetime(as_datetime(raw.data$time), tz = tz)
 
