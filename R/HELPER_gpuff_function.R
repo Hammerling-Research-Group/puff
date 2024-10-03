@@ -4,7 +4,7 @@ is.day <- function(time){
   # NOTE: times currently set to work in summer, future work will make this
   # more flexible.
   time.hour <- as.numeric(format(time, format = "%H"))
-  
+
   if (time.hour >= 7 & time.hour <= 18){
     return(T)
   } else {
@@ -12,10 +12,18 @@ is.day <- function(time){
   }
 }
 
-
-
+#' @title Determine Stability Class Based on Wind Speed and Time of Day
+#' @description This function calculates the stability class based on wind speed (U) and the time of day.
+#'              It categorizes the atmosphere's stability as one of several classes (A-F) depending on the inputs.
+#' @usage get.stab.class(U, time)
+#' @param U A numeric value representing the wind speed in meters per second.
+#' @param time A time value that is used to determine whether it's day or night.
+#' @return A character vector representing the stability class(es) ("A" to "F").
+#' @export
+#' @examples
+#' get.stab.class(3, 12)
 get.stab.class <- function(U, time){
-  
+
   # Determine stability class based on wind speed and time of day
   if (U < 2){
     stab.class <- ifelse(is.day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
@@ -28,24 +36,24 @@ get.stab.class <- function(U, time){
   } else {
     stab.class <- ifelse(is.day(time), list(c("D")),      list(c("D")))[[1]]
   }
-  
+
   return(stab.class)
-  
+
 }
 
 
 compute.sigma.vals <- function(stab.class, total.dist){
-  
+
   n.stab.class <- length(stab.class)
-  
+
   sigma.y.vals <- sigma.z.vals <- vector(length = n.stab.class)
-  
+
   # Loop through stability classes and get a, b, c, and d parameter values
   # based on the stability class and total distance traveled.
   for (stab.class.it in 1:n.stab.class){
-    
+
     if (stab.class[stab.class.it] == "A"){
-      
+
       if (total.dist <= 0.1){
         a <- 122.8
         b <- 0.9447
@@ -70,13 +78,13 @@ compute.sigma.vals <- function(stab.class, total.dist){
       } else {
         a <- 453.85
         b <- 2.1166
-      } 
-      
+      }
+
       c <- 24.1670
       d <- 2.5334
-      
+
     } else if (stab.class[stab.class.it] == "B"){
-      
+
       if (total.dist <= 0.2){
         a <- 90.673
         b <- 0.93198
@@ -87,19 +95,19 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 109.3
         b <- 1.09710
       }
-      
+
       c <- 18.333
       d <- 1.8096
-      
+
     } else if (stab.class[stab.class.it] == "C"){
-      
+
       a <- 61.141
       b <- 0.91465
       c <- 12.5
       d <- 1.0857
-      
+
     } else if (stab.class[stab.class.it] == "D"){
-      
+
       if (total.dist <= 0.3){
         a <- 34.459
         b <- 0.86974
@@ -119,13 +127,13 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 44.053
         b <- 0.51179
       }
-      
-      
+
+
       c <- 8.333
       d <- 0.72382
-      
+
     } else if (stab.class[stab.class.it] == "E"){
-      
+
       if (total.dist <= 0.1){
         a <- 24.260
         b <- 0.83660
@@ -154,12 +162,12 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 47.618
         b <- 0.29592
       }
-      
+
       c <- 6.25
       d <- 0.54287
-      
+
     } else if (stab.class[stab.class.it] == "F"){
-      
+
       if (total.dist <= 0.2){
         a <- 15.209
         b <- 0.81558
@@ -191,33 +199,33 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 34.219
         b <- 0.21716
       }
-      
+
       c <- 4.1667
       d <- 0.36191
     }
-    
+
     # If the puff has moved, get sigma values.
     # If total distance = 0, then the puff has just been initialized and should
     # not contribute to the overall concentration.
     if (total.dist > 0){
-      
+
       big.theta <- 0.017453293 * (c - d * log(total.dist))
       sigma.y.vals[stab.class.it] <- 465.11628 * total.dist * tan(big.theta)
-      
+
       sigma.z <- a * (total.dist)^b
       sigma.z.vals[stab.class.it] <- ifelse(sigma.z > 5000, 5000, sigma.z)
-      
+
     } else {
-      
+
       sigma.y.vals[stab.class.it] <- sigma.z.vals[stab.class.it] <- NA
     }
-    
+
   }
-  
+
   # Average sigma values over stability classes that were passed to this function.
   sigma.y <- mean(sigma.y.vals)
   sigma.z <- mean(sigma.z.vals)
-  
+
   return(c(sigma.y, sigma.z))
 }
 
@@ -229,31 +237,31 @@ gpuff <- function(Q, stab.class,
                   x.r.vec, y.r.vec, z.r.vec,
                   total.dist,
                   H, U){
-  
-  # converts kg/m^3 to ppm of METHANE 
+
+  # converts kg/m^3 to ppm of METHANE
   # Note that this is specific to methane
-  conversion.factor <- (1e6) * (1.524) 
-  
+  conversion.factor <- (1e6) * (1.524)
+
   # Convert total distance from m to km for stability class stuff
   total.dist <- total.dist / 1000
-  
+
   # Get sigma values for the stability classes passed to this function.
   sigma.vec <- compute.sigma.vals(stab.class, total.dist)
   sigma.y <- sigma.vec[1]
   sigma.z <- sigma.vec[2]
-  
-  # Calculate the contaminant concentration (kg/m^3) using Gaussian puff model 
+
+  # Calculate the contaminant concentration (kg/m^3) using Gaussian puff model
   C  = (Q / ( (2*pi)^(3/2) * sigma.y^2 * sigma.z )) *
     exp( -0.5 * ( (x.r.vec - x.p)^2 + (y.r.vec - y.p)^2 ) / sigma.y^2) *
     ( exp( -0.5*(z.r.vec - H)^2/sigma.z^2 ) + exp( -0.5*(z.r.vec + H)^2 / sigma.z^2 ) )
-  
+
   # Convert from kg/m^3 to ppm
-  C <- C*conversion.factor 
-  
-  # Convert NAs to zeros. NAs come from NA sigma values, which occur when the 
+  C <- C*conversion.factor
+
+  # Convert NAs to zeros. NAs come from NA sigma values, which occur when the
   # total distance is zero
   C <- ifelse(is.na(C), 0, C)
-  
-  return(C) 
+
+  return(C)
 }
 
