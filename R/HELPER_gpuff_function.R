@@ -41,7 +41,16 @@ get.stab.class <- function(U, time){
 
 }
 
-
+#' @title Find Average Sigma Values Based On Stability Class and Total Distance Traveled
+#' @description This function calculates the average sigma values based on stability class and the total distance traveled.
+#'              It reports the averages of the sigma values dependent on the inputs.
+#' @usage compute.sigma.vals(stab.class, total.dist)
+#' @param stab.class A character vector representing the stability class(es) ("A" to "F").
+#' @param total.dist A numeric value representing the distance traveled in --units--.
+#' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
+#' @export
+#' @examples
+#' filler
 compute.sigma.vals <- function(stab.class, total.dist){
 
   n.stab.class <- length(stab.class)
@@ -231,7 +240,24 @@ compute.sigma.vals <- function(stab.class, total.dist){
 
 
 
-
+#' @title Calculate the Contaminant Concentration Using Gaussian Puff Model
+#' @description This function calculates the concentration of contaminants in kg/m^3 based on the stability class,
+#'              It reports the concentration as a numeric value dependent on the inputs
+#' @usage gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+#' @param Q Filler.
+#' @param stab.class A character vector representing the stability class(es) ("A" to "F").
+#' @param x.p Filler.
+#' @param y.p Filler.
+#' @param x.r.vec Filler.
+#' @param y.r.vec Filler.
+#' @param z.r.vec Filler.
+#' @param total.dist A numeric value representing total distance of --- in m.
+#' @param H Filler.
+#' @param U A numeric value representing the wind speed in meters per second.
+#' @return A numeric value representing the contaminant concentration in kg per m^3.
+#' @export
+#' @examples
+#' Filler
 gpuff <- function(Q, stab.class,
                   x.p, y.p,
                   x.r.vec, y.r.vec, z.r.vec,

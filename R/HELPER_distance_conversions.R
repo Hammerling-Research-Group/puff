@@ -1,3 +1,12 @@
+#' @title Determine Zone Number Based on Latitude and Longitude
+#' @description This function calculates the zone number based on latitude and longitude.
+#' @usage latlon.to.zone.number(latitude,longitude)
+#' @param latitude A numeric value representing latitude in degrees.
+#' @param longitude A numeric value representing longitude in degrees.
+#' @return An integer value that represents the zone number of testing facility.
+#' @export
+#' @examples
+#' Filler
 latlon.to.zone.number <- function(latitude, longitude){
   if (56 <= latitude & latitude < 64 & 3 <= longitude & longitude < 12){
     return(32)
@@ -16,13 +25,29 @@ latlon.to.zone.number <- function(latitude, longitude){
   return(as.integer((longitude + 180) / 6) + 1)
 }
 
+#' @title Determine Longitude Based on Zone Number
+#' @description This function calculates the central longitude of testing cite based on zone number.
+#' @usage zone.number.to.central.longitude(zone_number)
+#' @param zone.number An integer value that represents the zone number of testing facility.
+#' @return A numeric value representing longitude in degrees.
+#' @export
+#' @examples
+#' Filler
 zone.number.to.central.longitude <- function(zone_number){
   return((zone_number - 1) * 6 - 180 + 3)
 }
 
+#' @title Determine Zone Category Based on Latitude
+#' @description This function categorizes the zone letter based on the latitude of the test site.
+#' @usage latitude.to.zone.letter(latitude)
+#' @param latitude A numeric value representing latitude in degrees
+#' @return A character vector representing the zone letter.
+#' @export
+#' @examples
+#' Filler
 latitude.to.zone.letter <- function(latitude){
   ZONE_LETTERS = c("C", "D", "E", "F", "G", "H", "J",
-                   "K", "L", "M", "N", "P", "Q", "R", 
+                   "K", "L", "M", "N", "P", "Q", "R",
                    "S", "T", "U", "V", "W", "X", "X")
   if (-80 <= latitude & latitude <= 84){
     return(ZONE_LETTERS[bitwShiftR(as.integer(latitude + 80),3)+1])
@@ -31,6 +56,19 @@ latitude.to.zone.letter <- function(latitude){
   }
 }
 
+#' @title Determine UTM Coordinate Based on Latitude and Longitude
+#' @description This function calculates the UTM coordinate from latitude and longitude
+#'              It gives coordinates in a flat grid system depending on inputs.
+#' @usage latlon.to.utm((latitude, longitude, force_zone_number, R=6378137, E=0.00669438))
+#' @param latitude A float value representing latitude in degrees.
+#' @param longitude A float value representing longitude in degrees.
+#' @param force_zone_number An integer value representing zone number, optional input.
+#' @param R A float value representing the semimajor axis of the planet, optional input.
+#' @param E A float value representing the eccentricity of the planet, optional input.
+#' @return A vector containing UTM coordinate information.
+#' @export
+#' @examples
+#' Filler
 latlon.to.utm <- function(latitude, longitude, force_zone_number=NULL, R=6378137, E=0.00669438){
   #This function convert Latitude and Longitude to UTM coordinate
   #      Parameters
@@ -47,7 +85,7 @@ latlon.to.utm <- function(latitude, longitude, force_zone_number=NULL, R=6378137
   #          semimajor axis of the planet, default Earth
   #      E: float
   #          eccentricity of the planet, default Earth
-  
+
   K0 = 0.9996 # UTM scale on the central meridian
   E2 = E * E
   E3 = E2 * E
@@ -62,18 +100,18 @@ latlon.to.utm <- function(latitude, longitude, force_zone_number=NULL, R=6378137
   lat_tan = lat_sin / lat_cos
   lat_tan2 = lat_tan * lat_tan
   lat_tan4 = lat_tan2 * lat_tan2
-  
+
   if (is.null(force_zone_number)){
     zone_number = latlon.to.zone.number(latitude, longitude)
   } else {
     zone_number = force_zone_number
   }
-  
+
   zone_letter = latitude.to.zone.letter(latitude)
   lon_rad = pi*(longitude)/180
   central_lon = zone.number.to.central.longitude(zone_number)
   central_lon_rad = pi*(central_lon)/180
-  
+
   n = R / sqrt(1 - E * lat_sin**2)
   c = E_P2 * lat_cos**2
   a = lat_cos * (lon_rad - central_lon_rad)
