@@ -1,3 +1,12 @@
+#' @title Determine Whether a Time is During the Day
+#' @description This function checks the time and classifies it as day or not
+#' @usage get.stab.class(U, time)
+#' @param U A numeric value representing the wind speed in meters per second.
+#' @param time A time value that is used to determine whether it's day or night.
+#' @return A character T or F representing whether or not it is daytime.
+#' @export
+#' @examples
+#' Filler
 is.day <- function(time){
   # function to check if a time is during the day
   # will be used to assign stability class in forward model
