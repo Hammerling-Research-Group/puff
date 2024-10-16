@@ -1,7 +1,6 @@
 #' @title Determine Whether a Time is During the Day
 #' @description This function checks the time and classifies it as day or not
-#' @usage get.stab.class(U, time)
-#' @param U A numeric value representing the wind speed in meters per second.
+#' @usage is.day(time)
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character T or F representing whether or not it is daytime.
 #' @export
@@ -59,7 +58,7 @@ get.stab.class <- function(U, time){
 #' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
 #' @export
 #' @examples
-#' filler
+#' compute.sigma.vals(A, 0.7)
 compute.sigma.vals <- function(stab.class, total.dist){
 
   n.stab.class <- length(stab.class)
@@ -249,52 +248,54 @@ compute.sigma.vals <- function(stab.class, total.dist){
 
 
 
-#' @title Calculate the Contaminant Concentration Using Gaussian Puff Model
-#' @description This function calculates the concentration of contaminants in kg/m^3 based on the stability class,
-#'              It reports the concentration as a numeric value dependent on the inputs
+#' @title Calculate Contaminant Concentration Using Gaussian Puff Model
+#' @description This function calculates the concentration of contaminants in kg/m^3 based on the emission rate (Q), stability class, and various spatial and meteorological inputs. 
+#'              It returns the concentration of contaminants (such as methane) at specified receptor locations using a Gaussian puff dispersion approach.
 #' @usage gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
-#' @param Q Filler.
-#' @param stab.class A character vector representing the stability class(es) ("A" to "F").
-#' @param x.p Filler.
-#' @param y.p Filler.
-#' @param x.r.vec Filler.
-#' @param y.r.vec Filler.
-#' @param z.r.vec Filler.
-#' @param total.dist A numeric value representing total distance of --- in m.
-#' @param H Filler.
-#' @param U A numeric value representing the wind speed in meters per second.
-#' @return A numeric value representing the contaminant concentration in kg per m^3.
+#' @param Q A numeric value representing the emission rate of the contaminant (e.g., methane) in kilograms per second (kg/s).
+#' @param stab.class A character vector representing the stability class(es) ("A" to "F"). Stability classes account for atmospheric turbulence: A (very unstable) to F (very stable).
+#' @param x.p A numeric value representing the x-coordinate of the emission source in meters.
+#' @param y.p A numeric value representing the y-coordinate of the emission source in meters.
+#' @param x.r.vec A numeric vector of x-coordinates of the receptor points (observation locations) in meters.
+#' @param y.r.vec A numeric vector of y-coordinates of the receptor points (observation locations) in meters.
+#' @param z.r.vec A numeric vector of z-coordinates of the receptor points (elevation above the ground) in meters.
+#' @param total.dist A numeric value representing the total downwind distance from the emission source to the receptor points in meters.
+#' @param H A numeric value representing the effective height of the emission source (stack height) in meters.
+#' @param U A numeric value representing the wind speed at the emission source in meters per second (m/s).
+#' @return A numeric value representing the contaminant concentration in parts per million (ppm) for methane, or kg per m^3 for other contaminants if conversion is adjusted.
 #' @export
 #' @examples
-#' Filler
+#' # Example usage with hypothetical values
+#' gpuff(Q = 1, stab.class = "C", x.p = 0, y.p = 0, 
+#'       x.r.vec = c(100, 200), y.r.vec = c(100, 200), z.r.vec = c(10, 10), 
+#'       total.dist = 200, H = 20, U = 5)
 gpuff <- function(Q, stab.class,
                   x.p, y.p,
                   x.r.vec, y.r.vec, z.r.vec,
                   total.dist,
                   H, U){
 
-  # converts kg/m^3 to ppm of METHANE
-  # Note that this is specific to methane
+  # Conversion factor for methane (kg/m^3 to ppm)
+  # This conversion is specific to methane gas
   conversion.factor <- (1e6) * (1.524)
 
-  # Convert total distance from m to km for stability class stuff
+  # Convert total distance from meters to kilometers for sigma calculation
   total.dist <- total.dist / 1000
 
-  # Get sigma values for the stability classes passed to this function.
+  # Get sigma values (dispersion coefficients) based on the stability class and distance
   sigma.vec <- compute.sigma.vals(stab.class, total.dist)
   sigma.y <- sigma.vec[1]
   sigma.z <- sigma.vec[2]
 
-  # Calculate the contaminant concentration (kg/m^3) using Gaussian puff model
-  C  = (Q / ( (2*pi)^(3/2) * sigma.y^2 * sigma.z )) *
+  # Calculate contaminant concentration (kg/m^3) using Gaussian puff model formula
+  C  = (Q / ( (2 * pi)^(3/2) * sigma.y^2 * sigma.z )) *
     exp( -0.5 * ( (x.r.vec - x.p)^2 + (y.r.vec - y.p)^2 ) / sigma.y^2) *
-    ( exp( -0.5*(z.r.vec - H)^2/sigma.z^2 ) + exp( -0.5*(z.r.vec + H)^2 / sigma.z^2 ) )
+    ( exp( -0.5*(z.r.vec - H)^2 / sigma.z^2 ) + exp( -0.5*(z.r.vec + H)^2 / sigma.z^2 ) )
 
-  # Convert from kg/m^3 to ppm
-  C <- C*conversion.factor
+  # Convert from kg/m^3 to ppm for methane
+  C <- C * conversion.factor
 
-  # Convert NAs to zeros. NAs come from NA sigma values, which occur when the
-  # total distance is zero
+  # Replace NA values with zero, which occur if sigma values are NA (i.e., if total distance is zero)
   C <- ifelse(is.na(C), 0, C)
 
   return(C)
