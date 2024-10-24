@@ -7,9 +7,13 @@
 #' @return Quantities corresponding to the conversion direction
 #' @export
 #' @examples
-#' Filler
-wind_vector_convert <- function(wind_speeds,wind_directions){
-
+#' wind_vector_convert(speed_vec,direction_vec)
+wind_vector_convert <- function(wind_speeds, wind_directions) {
+  theta <- (270 - wind_directions) * pi / 180  # convert degrees to radians and shift by 270
+  u <- wind_speeds * cos(theta)  # u (x-direction)
+  v <- wind_speeds * sin(theta)  # v (y-direction)
+  
+  return(list(u = u, v = v))
 }
 
 #' @title Convert between (ws, wd) and (u,v)
@@ -24,24 +28,25 @@ wind_vector_convert <- function(wind_speeds,wind_directions){
 #' @return Quantities corresponding to the conversion direction
 #' @export
 #' @examples
-#' Filler
-interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_end, puff_dt){
- ns = difftime(sim_start,sim_end,units='secs')
- n_obs = floor(ns/puff_dt)+1
- #time_stamps = unsure how to complete this in R, I found 2 functions that I'm not sure would work
- if (length(wind_speeds) == n_obs-1){
-   wind_speeds <- append(wind_speeds,wind_speeds[-1])
- }
-
- if (length(wind_directions) == n_obs-1){
-   wind_speeds <- append(wind_directions,wind_directions[-1])
- }
- wind_uv <- wind_vector_convert(wind_speeds, wind_directions)
- wind_u <- wind_uv$u
- wind_v <- wind_uv$v
-
- wind_df <- data.frame(wind_u = wind_u, wind_v = wind_v, time = time_stamps)
-
+#' interpolate_wind_data(speed_vec,direction_vec,start,end,60)
+interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_end, puff_dt) {
+  # convert wind speed and direction to u and v components
+  wind_uv <- wind_vector_convert(wind_speeds, wind_directions)
+  
+  # time series of wind data at the observation interval
+  obs_times <- seq(as.POSIXct(sim_start), as.POSIXct(sim_end), length.out = length(wind_speeds))
+  
+  # simulate times for every minute (e.g., puff_dt = 60 seconds) over the simulation duration
+  sim_times <- seq(as.POSIXct(sim_start), as.POSIXct(sim_end), by = puff_dt)
+  
+  # interpolate wind (u and v) to match simulation resolution
+  wind_u_interpolated <- approx(x = obs_times, y = wind_uv$u, xout = sim_times)$y
+  wind_v_interpolated <- approx(x = obs_times, y = wind_uv$v, xout = sim_times)$y
+  
+  return(
+    list(wind_u = wind_u_interpolated, 
+         wind_v = wind_v_interpolated)
+    )
 }
 
 #' @title Convert between (ws, wd) and (u,v)
