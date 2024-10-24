@@ -4,6 +4,7 @@
 #'    based on emissions from multiple sources and given wind data over a specified
 #'    time period.
 #'
+#' @usage simulate_sensor_mode(time_stamps_sim, sensor_coords, n_sim, num_sources, source_coords, emission_rates, wind_data, puff_duration = 1200)
 #' @param time_stamps_sim A vector of simulation time steps (in seconds).
 #' @param sensor_coords A matrix or data frame with sensor coordinates (x, y, z), where each row represents a sensor.
 #' @param n_sim An integer specifying the number of simulation steps to run.
