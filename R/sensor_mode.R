@@ -72,6 +72,3 @@ simulate_sensor_mode <- function(time_stamps_sim, sensor_coords,
   
   return(ch4_sim) 
 }
-
-  return(ch4_sim)
-}
