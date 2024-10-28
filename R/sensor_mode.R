@@ -29,43 +29,49 @@
 #'                      wind_data = wind_data)
 #'
 #' @export
-simulate_sensor_mode <- function(time_stamps_sim, sensor_coords,
-                                 n_sim, num_sources, source_coords,
-                                 emission_rates, wind_data,
+simulate_sensor_mode <- function(time_stamps_sim, sensor_coords, 
+                                 n_sim, num_sources, source_coords, 
+                                 emission_rates, wind_data, 
                                  puff_duration = 1200) {
   ch4_sim <- matrix(0, nrow = n_sim, ncol = nrow(sensor_coords))
-
+  
   for (i in 1:n_sim) {
     time_elapsed <- i * sim_dt
-
+    
     # loop over sources
     for (src in 1:num_sources) {
       source_x <- source_coords[src, 1]
       source_y <- source_coords[src, 2]
       source_z <- source_coords[src, 3]
-
+      
       # grab wind data at the ith time step
       u <- wind_data$wind_u[i]
       v <- wind_data$wind_v[i]
-
+      
       # loop over sensor locations
       for (j in 1:nrow(sensor_coords)) {
         sensor_x <- sensor_coords[j, 1]
         sensor_y <- sensor_coords[j, 2]
         sensor_z <- sensor_coords[j, 3]
-
+        
         # compute concentration for each sensor point
-        concentration <- gaussian_puff(sensor_x, sensor_y, sensor_z, time_elapsed,
-                                       sigma_y = 0.5 + 0.1 * time_elapsed,
-                                       sigma_z = 0.5 + 0.1 * time_elapsed,
-                                       q = emission_rates[src],
-                                       u = u,
-                                       z0 = source_z)
-
+        concentration <- gaussian_puff(
+          sensor_x, sensor_y, sensor_z, time_elapsed, 
+          sigma_y = 0.5 + 0.1 * time_elapsed, 
+          sigma_z = 0.5 + 0.1 * time_elapsed, 
+          q = emission_rates[src], 
+          u = u, 
+          v = v,  # including 'v' component for advection in the y direction per Ryker
+          z0 = source_z
+        )
+        
         ch4_sim[i, j] <- ch4_sim[i, j] + concentration
       }
     }
   }
+  
+  return(ch4_sim) 
+}
 
   return(ch4_sim)
 }
