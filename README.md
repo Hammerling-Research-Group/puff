@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://ams.mines.edu/hammerling-research-group/research/puff/">
-    <img src="https://github.com/Hammerling-Research-Group/.github/blob/352e42519c15af85a52fc2ed1a16695ad71d2994/profile/logo/hrg1.png" alt="puff logo" width="250" height="250">
+    <img src="https://github.com/Hammerling-Research-Group/puff/blob/88aa13c5975553c77e9be08cd69f5ef2e2067379/img/r_puff.png" alt="puff logo" width="250" height="250">
   </a>
 </p>
 
