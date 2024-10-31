@@ -320,7 +320,7 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' @return Quantities corresponding to concentration at sensor point(s)
 #' @export
 #' @examples
-#' gaussian_puff(sensor_x,sensor_y,sensor_z,time_elapsed,emission_rates,u,v,source_z,sqrt(u^2+v^2),current_time)
+#' gaussian_puff(x, y, z, t, q, u, v, z0, wind_speed, sim_time)
 gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
   # methane conversion factor (from kg/m^3 to ppm)
   conversion_factor <- (1e6) * (1.524)
