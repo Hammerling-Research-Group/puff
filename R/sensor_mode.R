@@ -60,10 +60,10 @@ simulate_sensor_mode <- function(time_stamps_sim, sensor_coords,
           z = sensor_z,
           t = time_elapsed,
           q = emission_rates[src],
-          u = u,
-          v = v,
+          u = u,  # x-direction wind component
+          v = v,  # y-direction wind component
           z0 = source_z,
-          wind_speed = sqrt(u^2 + v^2),  # adding: calc total wind speed from components
+          wind_speed = sqrt(u^2 + v^2),  # calc total wind speed from components
           sim_time = current_time
         )
         
