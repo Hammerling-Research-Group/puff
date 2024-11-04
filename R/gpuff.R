@@ -1,18 +1,18 @@
 #' @title Determine Whether a Time is During the Day
 #' @description This function checks the time and classifies it as day or not
-#' @usage is.day(time)
+#' @usage is_day(time)
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character T or F representing whether or not it is daytime.
 #' @export
 #' @examples
 #' Filler
-is.day <- function(time){
+is_day <- function(time){
   # function to check if a time is during the day
   # will be used to assign stability class in forward model
   # NOTE: times currently set to work in summer, future work will make this
   # more flexible.
   time.hour <- as.numeric(format(time, format = "%H"))
-  
+
   if (time.hour >= 7 & time.hour <= 18){
     return(T)
   } else {
@@ -23,54 +23,54 @@ is.day <- function(time){
 #' @title Determine Stability Class Based on Wind Speed and Time of Day
 #' @description This function calculates the stability class based on wind speed (U) and the time of day.
 #'              It categorizes the atmosphere's stability as one of several classes (A-F) depending on the inputs.
-#' @usage get.stab.class(U, time)
+#' @usage get_stab_class(U, time)
 #' @param U A numeric value representing the wind speed in meters per second.
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character vector representing the stability class(es) ("A" to "F").
 #' @export
 #' @examples
-#' get.stab.class(3, 12)
-get.stab.class <- function(U, time){
-  
+#' get_stab_class(3, 12)
+get_stab_class <- function(U, time){
+
   # Determine stability class based on wind speed and time of day
   if (U < 2){
-    stab.class <- ifelse(is.day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
+    stab.class <- ifelse(is_day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
   } else if (U >= 2 & U < 3){
-    stab.class <- ifelse(is.day(time), list(c("B")),      list(c("E", "F")))[[1]]
+    stab.class <- ifelse(is_day(time), list(c("B")),      list(c("E", "F")))[[1]]
   } else if (U >= 3 & U < 5){
-    stab.class <- ifelse(is.day(time), list(c("B", "C")), list(c("D", "E")))[[1]]
+    stab.class <- ifelse(is_day(time), list(c("B", "C")), list(c("D", "E")))[[1]]
   } else if (U >= 5 & U < 6){
-    stab.class <- ifelse(is.day(time), list(c("C", "D")), list(c("D")))[[1]]
+    stab.class <- ifelse(is_day(time), list(c("C", "D")), list(c("D")))[[1]]
   } else {
-    stab.class <- ifelse(is.day(time), list(c("D")),      list(c("D")))[[1]]
+    stab.class <- ifelse(is_day(time), list(c("D")),      list(c("D")))[[1]]
   }
-  
+
   return(stab.class)
-  
+
 }
 
 #' @title Find Average Sigma Values Based On Stability Class and Total Distance Traveled
 #' @description This function calculates the average sigma values based on stability class and the total distance traveled.
 #'              It reports the averages of the sigma values dependent on the inputs.
-#' @usage compute.sigma.vals(stab.class, total.dist)
+#' @usage compute_sigma_vals(stab.class, total.dist)
 #' @param stab.class A character vector representing the stability class(es) ("A" to "F").
 #' @param total.dist A numeric value representing the distance traveled in --units--.
 #' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
 #' @export
 #' @examples
-#' compute.sigma.vals(A, 0.7)
-compute.sigma.vals <- function(stab.class, total.dist){
-  
+#' compute_sigma_vals(A, 0.7)
+compute_sigma_vals <- function(stab.class, total.dist){
+
   n.stab.class <- length(stab.class)
-  
+
   sigma.y.vals <- sigma.z.vals <- vector(length = n.stab.class)
-  
+
   # Loop through stability classes and get a, b, c, and d parameter values
   # based on the stability class and total distance traveled.
   for (stab.class.it in 1:n.stab.class){
-    
+
     if (stab.class[stab.class.it] == "A"){
-      
+
       if (total.dist <= 0.1){
         a <- 122.8
         b <- 0.9447
@@ -96,12 +96,12 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 453.85
         b <- 2.1166
       }
-      
+
       c <- 24.1670
       d <- 2.5334
-      
+
     } else if (stab.class[stab.class.it] == "B"){
-      
+
       if (total.dist <= 0.2){
         a <- 90.673
         b <- 0.93198
@@ -112,19 +112,19 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 109.3
         b <- 1.09710
       }
-      
+
       c <- 18.333
       d <- 1.8096
-      
+
     } else if (stab.class[stab.class.it] == "C"){
-      
+
       a <- 61.141
       b <- 0.91465
       c <- 12.5
       d <- 1.0857
-      
+
     } else if (stab.class[stab.class.it] == "D"){
-      
+
       if (total.dist <= 0.3){
         a <- 34.459
         b <- 0.86974
@@ -144,12 +144,12 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 44.053
         b <- 0.51179
       }
-      
+
       c <- 8.333
       d <- 0.72382
-      
+
     } else if (stab.class[stab.class.it] == "E"){
-      
+
       if (total.dist <= 0.1){
         a <- 24.260
         b <- 0.83660
@@ -178,12 +178,12 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 47.618
         b <- 0.29592
       }
-      
+
       c <- 6.25
       d <- 0.54287
-      
+
     } else if (stab.class[stab.class.it] == "F"){
-      
+
       if (total.dist <= 0.2){
         a <- 15.209
         b <- 0.81558
@@ -215,33 +215,33 @@ compute.sigma.vals <- function(stab.class, total.dist){
         a <- 34.219
         b <- 0.21716
       }
-      
+
       c <- 4.1667
       d <- 0.36191
     }
-    
+
     # If the puff has moved, get sigma values.
     # If total distance = 0, then the puff has just been initialized and should
     # not contribute to the overall concentration.
     if (total.dist > 0){
-      
+
       big.theta <- 0.017453293 * (c - d * log(total.dist))
       sigma.y.vals[stab.class.it] <- 465.11628 * total.dist * tan(big.theta)
-      
+
       sigma.z <- a * (total.dist)^b
       sigma.z.vals[stab.class.it] <- ifelse(sigma.z > 5000, 5000, sigma.z)
-      
+
     } else {
-      
+
       sigma.y.vals[stab.class.it] <- sigma.z.vals[stab.class.it] <- NA
     }
-    
+
   }
-  
+
   # Average sigma values over stability classes that were passed to this function.
   sigma.y <- mean(sigma.y.vals)
   sigma.z <- mean(sigma.z.vals)
-  
+
   return(c(sigma.y, sigma.z))
 }
 
@@ -259,7 +259,7 @@ wind_vector_convert <- function(wind_speeds, wind_directions) {
   theta <- (270 - wind_directions) * pi / 180  # convert degrees to radians and shift by 270 per Ryker
   u <- wind_speeds * cos(theta)  # u (x-direction)
   v <- wind_speeds * sin(theta)  # v (y-direction)
-  
+
   return(list(u = u, v = v))
 }
 
@@ -279,19 +279,19 @@ wind_vector_convert <- function(wind_speeds, wind_directions) {
 interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_end, puff_dt) {
   # convert wind speed and direction to u and v components
   wind_uv <- wind_vector_convert(wind_speeds, wind_directions)
-  
+
   # time series of wind data at the observation interval
   obs_times <- seq(as.POSIXct(sim_start), as.POSIXct(sim_end), length.out = length(wind_speeds))
-  
+
   # simulate times for every minute (puff_dt = 60 seconds) over the simulation duration
   sim_times <- seq(as.POSIXct(sim_start), as.POSIXct(sim_end), by = puff_dt)
-  
+
   # interpolate wind (u and v) to match simulation resolution
   wind_u_interpolated <- approx(x = obs_times, y = wind_uv$u, xout = sim_times)$y
   wind_v_interpolated <- approx(x = obs_times, y = wind_uv$v, xout = sim_times)$y
-  
+
   return(
-    list(wind_u = wind_u_interpolated, 
+    list(wind_u = wind_u_interpolated,
          wind_v = wind_v_interpolated)
     )
 }
@@ -299,8 +299,8 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' Gaussian Puff Concentration Calculation
 #'
 #' @description Calculates the concentration of an emission event at a specified location and time due to a Gaussian puff.
-#' 
-#' This function uses wind speed and direction components, advection adjustments, and stability class calculations to 
+#'
+#' This function uses wind speed and direction components, advection adjustments, and stability class calculations to
 #'   accurately measure the dispersion of a puff in the atmosphere.
 #'
 #' @usage gaussian_puff(x, y, z, t, q, u, v, z0, wind_speed, sim_time)
@@ -324,25 +324,25 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
   # methane conversion factor (from kg/m^3 to ppm)
   conversion_factor <- (1e6) * (1.524)
-  
+
   # calc downwind distance then get stab class (recycling Will's helpers)
   downwind_distance <- sqrt((u * t)^2 + (v * t)^2)
-  
-  stability_class <- get.stab.class(wind_speed, sim_time)
-  
+
+  stability_class <- get_stab_class(wind_speed, sim_time)
+
   # compute sigmas (y and z) based on stability class and downwind distance
-  sigma_vals <- compute.sigma.vals(stability_class, downwind_distance)
+  sigma_vals <- compute_sigma_vals(stability_class, downwind_distance)
   sigma_y <- sigma_vals[1]
   sigma_z <- sigma_vals[2]
-  
+
   # adjust positions using advection in x and y directions: per Ryker to increase comp eff
   x_advection <- x - u * t
   y_advection <- y - v * t
-  
+
   exp_factor_x <- exp(-(x_advection^2 + y_advection^2) / (2 * sigma_y^2))
   exp_factor_z1 <- exp(-(z - z0)^2 / (2 * sigma_z^2))
   exp_factor_z2 <- exp(-(z + z0)^2 / (2 * sigma_z^2))
-  
+
   # adding conditional check for current draft version: if anything is missing, set to 0
   if (is.na(exp_factor_x) || is.na(exp_factor_z1) || is.na(exp_factor_z2) ||
       is.nan(exp_factor_x) || is.nan(exp_factor_z1) || is.nan(exp_factor_z2) ||
@@ -351,6 +351,6 @@ gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
   } else {
     concentration <- ((q / ((2 * pi)^(3/2) * sigma_y^2 * sigma_z)) * exp_factor_x * (exp_factor_z1 + exp_factor_z2))*conversion_factor
   }
-  
+
   return(concentration)
 }
