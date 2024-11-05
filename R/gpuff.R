@@ -32,6 +32,8 @@ is_day <- function(time){
 #' get_stab_class(3, 12)
 get_stab_class <- function(U, time){
 
+  # TODO there's a lot of redundancy here. If statements could be simplified and the value for is_day could be computed once instead of getting re-called for each if statement -Ryker
+
   # Determine stability class based on wind speed and time of day
   if (U < 2){
     stab.class <- ifelse(is_day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
@@ -60,6 +62,8 @@ get_stab_class <- function(U, time){
 #' @examples
 #' compute_sigma_vals(A, 0.7)
 compute_sigma_vals <- function(stab.class, total.dist){
+
+  # TODO note: these table lookups assume total.dist is in kilometers. I recommend taking positions in lat/long or meters (as I think it's the most convenient for the group) and converting from meters to kilometers somewhere before or inside this function. Note that if you take input as lat/long, you'll have already needed to convert to meters. -Ryker
 
   n.stab.class <- length(stab.class)
 
@@ -283,6 +287,7 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
   # time series of wind data at the observation interval
   obs_times <- seq(as.POSIXct(sim_start), as.POSIXct(sim_end), length.out = length(wind_speeds))
 
+  # TODO the below comment looks out of date (the puff_dt = 60 part) -Ryker
   # simulate times for every minute (puff_dt = 60 seconds) over the simulation duration
   sim_times <- seq(as.POSIXct(sim_start), as.POSIXct(sim_end), by = puff_dt)
 
@@ -326,7 +331,7 @@ gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
   conversion_factor <- (1e6) * (1.524)
 
   # calc downwind distance then get stab class (recycling Will's helpers)
-  downwind_distance <- sqrt((u * t)^2 + (v * t)^2)
+  downwind_distance <- sqrt((u * t)^2 + (v * t)^2) # TODO I think this could be calculated as wind_speed*t -Ryker
 
   stability_class <- get_stab_class(wind_speed, sim_time)
 
@@ -335,10 +340,13 @@ gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
   sigma_y <- sigma_vals[1]
   sigma_z <- sigma_vals[2]
 
-  # adjust positions using advection in x and y directions: per Ryker to increase comp eff
+  # adjust positions using advection in x and y directions
   x_advection <- x - u * t
   y_advection <- y - v * t
 
+  # TODO the expression for exp_factor_x relies on your grid (equivalently, your sensor location lists) being centered at the emitting source. e.g. you compute centered_x = sensor_x - x0 and centered_y = sensor_y - y0, then use centered_{x,y} in the expressions for the advection above. see here for the place where this happens in the C code: https://github.com/rykerfish/FastGaussianPuff/blob/d8fbabb79bee3d07cc5cba9fd549a2071fe3bc16/src/CGaussianPuff.cpp#L654-L667
+  # since the centering bit is missing currently, I think the exp_factor_x is wrong -Ryker
+    # note: you could alternatively code it explicitly as x - x0 - u*t (I think), but shifting your whole grid saves computation if you only handle one source at a time
   exp_factor_x <- exp(-(x_advection^2 + y_advection^2) / (2 * sigma_y^2))
   exp_factor_z1 <- exp(-(z - z0)^2 / (2 * sigma_z^2))
   exp_factor_z2 <- exp(-(z + z0)^2 / (2 * sigma_z^2))
