@@ -33,6 +33,16 @@ simulate_sensor_mode <- function(time_stamps_sim, sensor_coords,
                                  puff_duration = 1200) {
   ch4_sim <- matrix(0, nrow = n_sim, ncol = nrow(sensor_coords))
   
+  # TODO There's something off with how time is being handled here. 
+  # with how it's written currently, time_elapsed is the time since a puff has been released since it's being fed into the GP function and being used to advect the puff. so, this means only a single puff is being emitted here and it's going off into infinity.
+  # what's missing is the puff_dt. a puff needs to get created every so often, and then simulated as is currently written. the procedure should look something like this
+  # 1. split the emission period by puff_dt so you have N_p puff emission times at time p_i = i*puff_dt for 1 <= i <= N_p
+  # 2. for each p_i, you want to simulate up to the puff_duration. so, split the time interval from [p_i, p_i + puff_duration] using sim_dt, e.g. n_steps = puff_duration/sim_dt. then, for j=1:n_steps, time_elapsed = j*sim_dt and simulate as you currently are.
+      # note: simulating up to puff_duration is quite slow. this is part of what the thresholding takes care of
+      
+  # other note: I might remove the source loop for now and only deal with one source- it's easy to add back in later, and where it's currently positioned will make the thresholding a little clunky. 
+
+
   for (i in 1:n_sim) {
     time_elapsed <- i * sim_dt
     current_time <- time_stamps_sim[i]
