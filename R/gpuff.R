@@ -326,13 +326,12 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' @export
 #' @examples
 #' gaussian_puff(x, y, z, t, q, u, v, z0, wind_speed, sim_time)
-gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
-  # methane conversion factor (from kg/m^3 to ppm)
+gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time, x0, y0) {
+  # conversion factor for methane (from kg/m^3 to ppm)
   conversion_factor <- (1e6) * (1.524)
 
-  # calc downwind distance then get stab class (recycling Will's helpers)
-  downwind_distance <- sqrt((u * t)^2 + (v * t)^2) # TODO I think this could be calculated as wind_speed*t -Ryker
-
+  # downwind distance and determine stability class
+  downwind_distance <- wind_speed * t # centered per Ryker
   stability_class <- get_stab_class(wind_speed, sim_time)
 
   # compute sigmas (y and z) based on stability class and downwind distance
@@ -340,24 +339,28 @@ gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time) {
   sigma_y <- sigma_vals[1]
   sigma_z <- sigma_vals[2]
 
-  # adjust positions using advection in x and y directions
-  x_advection <- x - u * t
-  y_advection <- y - v * t
+  # center sensor coordinates around emitting source
+  centered_x <- x - x0
+  centered_y <- y - y0
 
-  # TODO the expression for exp_factor_x relies on your grid (equivalently, your sensor location lists) being centered at the emitting source. e.g. you compute centered_x = sensor_x - x0 and centered_y = sensor_y - y0, then use centered_{x,y} in the expressions for the advection above. see here for the place where this happens in the C code: https://github.com/rykerfish/FastGaussianPuff/blob/d8fbabb79bee3d07cc5cba9fd549a2071fe3bc16/src/CGaussianPuff.cpp#L654-L667
-  # since the centering bit is missing currently, I think the exp_factor_x is wrong -Ryker
-    # note: you could alternatively code it explicitly as x - x0 - u*t (I think), but shifting your whole grid saves computation if you only handle one source at a time
+  # adjust positions via advection in x and y directions
+  x_advection <- centered_x - u * t
+  y_advection <- centered_y - v * t
+
   exp_factor_x <- exp(-(x_advection^2 + y_advection^2) / (2 * sigma_y^2))
   exp_factor_z1 <- exp(-(z - z0)^2 / (2 * sigma_z^2))
   exp_factor_z2 <- exp(-(z + z0)^2 / (2 * sigma_z^2))
 
-  # adding conditional check for current draft version: if anything is missing, set to 0
+  # handle edge cases: if any factor is invalid, set concentration to 0
   if (is.na(exp_factor_x) || is.na(exp_factor_z1) || is.na(exp_factor_z2) ||
       is.nan(exp_factor_x) || is.nan(exp_factor_z1) || is.nan(exp_factor_z2) ||
       (exp_factor_x == 0 || (exp_factor_z1 + exp_factor_z2) == 0)) {
     concentration <- 0
   } else {
-    concentration <- ((q / ((2 * pi)^(3/2) * sigma_y^2 * sigma_z)) * exp_factor_x * (exp_factor_z1 + exp_factor_z2))*conversion_factor
+    # compute concentration with the corrected factors
+    concentration <- ((q / ((2 * pi)^(3/2) * sigma_y^2 * sigma_z)) *
+                        exp_factor_x * (exp_factor_z1 + exp_factor_z2)) *
+      conversion_factor
   }
 
   return(concentration)

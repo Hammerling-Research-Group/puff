@@ -12,7 +12,8 @@ simulate_sensor_mode(
   source_coords,
   emission_rates,
   wind_data,
-  puff_duration = 1200
+  puff_duration = 1200,
+  puff_dt = 300
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ of each source.}
 for the y-direction) interpolated for each simulation time step.}
 
 \item{puff_duration}{Numeric. The time in seconds that a puff remains active before dissipating. Default is 1200 seconds.}
+
+\item{puff_dt}{Numeric. The time in seconds between consecutive puff emissions. Default is 300 seconds.}
 }
 \value{
 Matrix. A matrix with dimensions `n_sim` by the number of sensors, containing methane concentrations

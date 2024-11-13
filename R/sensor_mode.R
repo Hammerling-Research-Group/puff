@@ -15,6 +15,7 @@
 #' @param wind_data List. A list containing wind speed components (`wind_u` for the x-direction and `wind_v`
 #'   for the y-direction) interpolated for each simulation time step.
 #' @param puff_duration Numeric. The time in seconds that a puff remains active before dissipating. Default is 1200 seconds.
+#' @param puff_dt Numeric. The time in seconds between consecutive puff emissions. Default is 300 seconds.
 #'
 #' @return Matrix. A matrix with dimensions `n_sim` by the number of sensors, containing methane concentrations
 #'   at each sensor for each time step.
@@ -27,60 +28,61 @@
 #' wind_data <- list(wind_u = runif(60, 2, 5), wind_v = runif(60, 1, 3))
 #' simulate_sensor_mode(time_stamps, sensor_coords, 60, 3, source_coords, emission_rates, wind_data)
 #' @export
-simulate_sensor_mode <- function(time_stamps_sim, sensor_coords, 
-                                 n_sim, num_sources, source_coords, 
-                                 emission_rates, wind_data, 
-                                 puff_duration = 1200) {
+simulate_sensor_mode <- function(time_stamps_sim, sensor_coords,
+                                 n_sim, num_sources, source_coords,
+                                 emission_rates, wind_data,
+                                 puff_duration = 1200, puff_dt = 300) {
   ch4_sim <- matrix(0, nrow = n_sim, ncol = nrow(sensor_coords))
-  
-  # TODO There's something off with how time is being handled here. 
-  # with how it's written currently, time_elapsed is the time since a puff has been released since it's being fed into the GP function and being used to advect the puff. so, this means only a single puff is being emitted here and it's going off into infinity.
-  # what's missing is the puff_dt. a puff needs to get created every so often, and then simulated as is currently written. the procedure should look something like this
-  # 1. split the emission period by puff_dt so you have N_p puff emission times at time p_i = i*puff_dt for 1 <= i <= N_p
-  # 2. for each p_i, you want to simulate up to the puff_duration. so, split the time interval from [p_i, p_i + puff_duration] using sim_dt, e.g. n_steps = puff_duration/sim_dt. then, for j=1:n_steps, time_elapsed = j*sim_dt and simulate as you currently are.
-      # note: simulating up to puff_duration is quite slow. this is part of what the thresholding takes care of
-      
-  # other note: I might remove the source loop for now and only deal with one source- it's easy to add back in later, and where it's currently positioned will make the thresholding a little clunky. 
 
+  # Iterate over each source
+  for (src in 1:num_sources) {
+    source_x <- source_coords[src, 1]
+    source_y <- source_coords[src, 2]
+    source_z <- source_coords[src, 3]
 
-  for (i in 1:n_sim) {
-    time_elapsed <- i * sim_dt
-    current_time <- time_stamps_sim[i]
-    
-    # loop over sources
-    for (src in 1:num_sources) {
-      source_x <- source_coords[src, 1]
-      source_y <- source_coords[src, 2]
-      source_z <- source_coords[src, 3]
-      
-      # grab wind data at the ith time step
-      u <- wind_data$wind_u[i]
-      v <- wind_data$wind_v[i]
-      
-      # loop over sensor locations
-      for (j in 1:nrow(sensor_coords)) {
-        sensor_x <- sensor_coords[j, 1]
-        sensor_y <- sensor_coords[j, 2]
-        sensor_z <- sensor_coords[j, 3]
-        
-        # concentration for each sensor point
-        concentration <- gaussian_puff(
-          x = sensor_x,
-          y = sensor_y,
-          z = sensor_z,
-          t = time_elapsed,
-          q = emission_rates[src],
-          u = u,  # x-direction wind component
-          v = v,  # y-direction wind component
-          z0 = source_z,
-          wind_speed = sqrt(u^2 + v^2),  # calc total wind speed from components
-          sim_time = current_time
-        )
-        
-        ch4_sim[i, j] <- ch4_sim[i, j] + concentration
+    # Generate puff emission times
+    puff_emission_times <- seq(0, puff_duration, by = puff_dt)
+
+    # Loop over each puff emission time
+    for (p_i in puff_emission_times) {
+      # Calculate steps for this puff's lifetime
+      n_steps <- min(puff_duration / puff_dt, n_sim)
+
+      for (j in 1:n_steps) {
+        time_elapsed <- j * puff_dt
+        current_time <- time_stamps_sim[j]
+
+        # Wind data at this time step
+        u <- wind_data$wind_u[j]
+        v <- wind_data$wind_v[j]
+
+        # Loop over sensor locations
+        for (k in 1:nrow(sensor_coords)) {
+          sensor_x <- sensor_coords[k, 1]
+          sensor_y <- sensor_coords[k, 2]
+          sensor_z <- sensor_coords[k, 3]
+
+          # Calculate concentration at each sensor point
+          concentration <- gaussian_puff(
+            x = sensor_x,
+            y = sensor_y,
+            z = sensor_z,
+            t = time_elapsed,
+            q = emission_rates[src],
+            u = u,
+            v = v,
+            z0 = source_z,
+            wind_speed = sqrt(u^2 + v^2),
+            sim_time = current_time,
+            x0 = source_x,
+            y0 = source_y
+          )
+
+          ch4_sim[j, k] <- ch4_sim[j, k] + concentration
+        }
       }
     }
   }
-  
-  return(ch4_sim) 
+
+  return(ch4_sim)
 }
