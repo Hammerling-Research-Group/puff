@@ -4,7 +4,7 @@
 #'   Concentrations are calculated based on emission rates, wind conditions, and puff dispersion.
 #'
 #' @usage simulate_sensor_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-#'   emission_rate, wind_data, sensor_coords, puff_duration, stab_class)
+#'   emission_rate, wind_data, sensor_coords, puff_duration)
 #'
 #' @param sim_dt Integer. Simulation time step (in seconds), determining how frequently the simulation
 #'   updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.
@@ -20,7 +20,6 @@
 #'   representing wind components in the x and y directions, respectively, for each simulation step.
 #' @param sensor_coords Numeric matrix. Coordinates of sensors in meters (x, y, z format); row = sensor.
 #' @param puff_duration Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.
-#' @param stab_class Character. Atmospheric stability class influencing dispersion (e.g., "A", "B", "C").
 #'
 #' @return A data frame containing aggregated methane concentrations at sensor locations, with rows
 #'   corresponding to output timestamps and columns to sensors.
@@ -46,11 +45,10 @@
 #'     wind_v = runif(3601, min = -3, max = 1.5)
 #'   )
 #'   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
-#'   stab_class <- "C"
 #'
 #'   simulate_sensor_mode(
 #'     sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-#'     emission_rate, wind_data, sensor_coords, puff_duration, stab_class
+#'     emission_rate, wind_data, sensor_coords, puff_duration
 #'   )
 #' }
 #'
@@ -59,7 +57,7 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
                                  start_time, end_time,
                                  source_coords, emission_rate,
                                  wind_data, sensor_coords,
-                                 puff_duration = 1200, stab_class) {
+                                 puff_duration = 1200) {
 
   # set things up for sim + output
   sim_timestamps <- seq(from = as.POSIXct(start_time),
@@ -93,6 +91,9 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
     wind_u <- wind_data$wind_u[t_idx]
     wind_v <- wind_data$wind_v[t_idx]
     wind_speed <- sqrt(wind_u^2 + wind_v^2)
+
+    # dynamically determine stability class based on wind speed and time of day
+    stab_class <- get.stab.class(wind_speed, current_time)
 
     # emit new puffs if arrived at a puff emission interval
     if (t_idx == 1 || as.numeric(difftime(current_time, start_time, units = "secs")) %% puff_dt == 0) {
@@ -146,7 +147,7 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
   # aggregate concentrations to fit with output_dt resolution
   c <- aggregate(concentrations, by = list(cut(sim_timestamps,
                                                breaks = output_timestamps)),
-                 mean) # TODO: can update how we think about this (e.g., mean, median, etc.; could be tuneable arg)
+                 mean) # TODO: can update how we think about this (e.g., mean, median, etc.; could be arg)
   rownames(c) <- NULL
 
   return(c)

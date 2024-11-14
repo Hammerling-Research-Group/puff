@@ -5,7 +5,7 @@
 \title{Simulate Atmospheric Concentration at Sensor Locations}
 \usage{
 simulate_sensor_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-  emission_rate, wind_data, sensor_coords, puff_duration, stab_class)
+  emission_rate, wind_data, sensor_coords, puff_duration)
 }
 \arguments{
 \item{sim_dt}{Integer. Simulation time step (in seconds), determining how frequently the simulation
@@ -31,8 +31,6 @@ representing wind components in the x and y directions, respectively, for each s
 \item{sensor_coords}{Numeric matrix. Coordinates of sensors in meters (x, y, z format); row = sensor.}
 
 \item{puff_duration}{Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.}
-
-\item{stab_class}{Character. Atmospheric stability class influencing dispersion (e.g., "A", "B", "C").}
 }
 \value{
 A data frame containing aggregated methane concentrations at sensor locations, with rows
@@ -64,11 +62,10 @@ The simulation emits puffs from the specified source at intervals of \code{puff_
     wind_v = runif(3601, min = -3, max = 1.5)
   )
   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
-  stab_class <- "C"
 
   simulate_sensor_mode(
     sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-    emission_rate, wind_data, sensor_coords, puff_duration, stab_class
+    emission_rate, wind_data, sensor_coords, puff_duration
   )
 }
 
