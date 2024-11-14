@@ -49,10 +49,10 @@
 #'   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 #'   stab_class <- "C"
 #'
-#' simulate_sensor_mode(
-#'   sim_dt, puff_dt, output_dt, start_time, end_time, source_coords, 
-#'   emission_rate, wind_data, sensor_coords, puff_duration, stab_class
-#' )
+#'   simulate_sensor_mode(
+#'     sim_dt, puff_dt, output_dt, start_time, end_time, source_coords, 
+#'     emission_rate, wind_data, sensor_coords, puff_duration, stab_class
+#'   )
 #' }
 #'
 #' @export
