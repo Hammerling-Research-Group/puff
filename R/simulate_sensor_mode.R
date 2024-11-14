@@ -36,8 +36,8 @@
 #'   sim_dt <- 10
 #'   puff_dt <- 10
 #'   output_dt <- 60
-#'   start_time <- "2024-01-01 00:00:00"
-#'   end_time <- "2024-01-01 01:00:00"
+#'   start_time <- "2024-01-01 12:00:00"
+#'   end_time <- "2024-01-01 13:00:00"
 #'   source_coords <- c(0, 0, 2.5)
 #'   emission_rate <- 3.5
 #'   wind_data <- list(
