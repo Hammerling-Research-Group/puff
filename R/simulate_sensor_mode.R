@@ -1,38 +1,66 @@
-#' Simulate Methane Concentration at Sensor Locations
+#' Simulate Atmospheric Concentration at Sensor Locations
 #'
-#' Calculates methane concentration over time at specified sensor locations
-#' due to emissions from multiple sources. The simulation incorporates
-#' advection, dispersion, and stability class calculations based on wind data.
+#' Simulates atmospheric concentrations at sensor locations over time using a Gaussian puff forward model. 
+#'   Concentrations are calculated based on emission rates, wind conditions, and puff dispersion.
 #'
-#' @param time_stamps_sim POSIXct vector. The sequence of timestamps for each simulation time step.
-#' @param sensor_coords Matrix. A matrix with three columns representing the x, y, and z coordinates
-#'   of each sensor where concentrations are calculated.
-#' @param n_sim Integer. The number of simulation time steps.
-#' @param num_sources Integer. The number of sources emitting methane.
-#' @param source_coords Matrix. A matrix with three columns representing the x, y, and z coordinates
-#'   of each source.
-#' @param emission_rates Numeric vector. The emission rates for each source, controlling the rate of methane release.
-#' @param wind_data List. A list containing wind speed components (`wind_u` for the x-direction and `wind_v`
-#'   for the y-direction) interpolated for each simulation time step.
-#' @param puff_duration Numeric. The time in seconds that a puff remains active before dissipating. Default is 1200 seconds.
-#' @param puff_dt Numeric. The time in seconds between consecutive puff emissions. Default is 300 seconds.
+#' @usage simulate_sensor_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_coords, 
+#'   emission_rate, wind_data, sensor_coords, puff_duration, stab_class)
 #'
-#' @return Matrix. A matrix with dimensions `n_sim` by the number of sensors, containing methane concentrations
-#'   at each sensor for each time step.
+#' @param sim_dt Integer. Simulation time step (in seconds), determining how frequently the simulation 
+#'   updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.
+#' @param puff_dt Integer. Time interval (in seconds), determining how frequently new puffs are emitted into 
+#'   the simulation.
+#' @param output_dt Integer. Desired time resolution (in seconds) for the final output of concentrations.
+#' @param start_time POSIXct. Start time of the simulation.
+#' @param end_time POSIXct. End time of the simulation.
+#' @param source_coords Numeric vector. Coordinates of the emission source in meters (x, y, z). 
+#'   E.g, \code{c(x = 10, y = 0, z = 1.5)}.
+#' @param emission_rate Numeric. Emission rate of the source in kg/s.
+#' @param wind_data Data frame. Wind data containing columns \code{wind_u} and \code{wind_v}, 
+#'   representing wind components in the x and y directions, respectively, for each simulation step.
+#' @param sensor_coords Numeric matrix. Coordinates of sensors in meters (x, y, z format); row = sensor.
+#' @param puff_duration Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.
+#' @param stab_class Character. Atmospheric stability class influencing dispersion (e.g., "A", "B", "C").
+#'
+#' @return A data frame containing aggregated methane concentrations at sensor locations, with rows 
+#'   corresponding to output timestamps and columns to sensors.
+#'
+#' @details The simulation emits puffs from the specified source at intervals of \code{puff_dt} 
+#'   and updates their positions based on wind data at intervals of \code{sim_dt}. Concentrations 
+#'   at sensor locations are calculated using a Gaussian puff forward model, which accounts for dispersion 
+#'   based on the stability class and other inputs. Finally, concentrations are aggregated 
+#'   to match the \code{output_dt} resolution.
 #'
 #' @examples
-#' time_stamps <- seq(as.POSIXct("2024-01-01 00:00:00"), by = "min", length.out = 60)
-#' sensor_coords <- matrix(c(200, 200, 0, 300, 300, 0, 400, 400, 0), ncol = 3, byrow = TRUE)
-#' source_coords <- matrix(c(25, 25, 2, 75, 25, 2, 50, 75, 3), ncol = 3, byrow = TRUE)
-#' emission_rates <- c(1, 5, 10)
-#' wind_data <- list(wind_u = runif(60, 2, 5), wind_v = runif(60, 1, 3))
-#' simulate_sensor_mode(time_stamps, sensor_coords, 60, 3, source_coords, emission_rates, wind_data)
+#' \dontrun{
+#'   set.seed(123)
+#'   sim_dt <- 10
+#'   puff_dt <- 60
+#'   output_dt <- 300
+#'   start_time <- "2024-01-01 00:00:00"
+#'   end_time <- "2024-01-01 01:00:00"
+#'   source_coords <- c(0, 0, 2.5)
+#'   emission_rate <- 3.5
+#'   set.seed(123)
+#'   wind_data <- list(
+#'     wind_u = runif(3601, min = -3, max = 0.7), 
+#'     wind_v = runif(3601, min = -3, max = 1.5)
+#'   )
+#'   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+#'   stab_class <- "C"
+#'
+#' simulate_sensor_mode(
+#'   sim_dt, puff_dt, output_dt, start_time, end_time, source_coords, 
+#'   emission_rate, wind_data, sensor_coords, puff_duration, stab_class
+#' )
+#' }
+#'
 #' @export
 simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
                                  start_time, end_time,
                                  source_coords, emission_rate,
                                  wind_data, sensor_coords,
-                                 puff_duration, stab_class) {
+                                 puff_duration = 1200, stab_class) {
 
   # set things up for sim + output
   sim_timestamps <- seq(from = as.POSIXct(start_time),
