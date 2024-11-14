@@ -3,9 +3,9 @@
 #' @usage is.day(time)
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character T or F representing whether or not it is daytime.
-#' @export
 #' @examples
 #' is.day(8)
+#' @export
 is.day <- function(time){
   # function to check if a time is during the day
   # will be used to assign stability class in forward model
@@ -27,9 +27,9 @@ is.day <- function(time){
 #' @param U A numeric value representing the wind speed in meters per second.
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character vector representing the stability class(es) ("A" to "F").
-#' @export
 #' @examples
-#' get.stab.class(3, 12)
+#' get.stab.class(3, 12
+#' @export
 get.stab.class <- function(U, time){
 
   # Determine stability class based on wind speed and time of day
@@ -56,9 +56,9 @@ get.stab.class <- function(U, time){
 #' @param stab.class A character vector representing the stability class(es) ("A" to "F").
 #' @param total.dist A numeric value representing the distance traveled in --units--.
 #' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
-#' @export
 #' @examples
 #' compute.sigma.vals(A, 0.7)
+#' @export
 compute.sigma.vals <- function(stab.class, total.dist){
 
   n.stab.class <- length(stab.class)
@@ -253,9 +253,9 @@ compute.sigma.vals <- function(stab.class, total.dist){
 #' @param wind_directions A list of float values of wind directions in degrees at each time stamp following
 #' the conventional definition: 0 -> wind blowing from North, 90 -> E, 180 -> S, 270 -> W
 #' @return Quantities corresponding to the conversion direction
-#' @export
 #' @examples
 #' wind_vector_convert(speed_vec,direction_vec)
+#' @export
 wind_vector_convert <- function(wind_speeds, wind_directions) {
   theta <- (270 - wind_directions) * pi / 180  # convert degrees to radians and shift by 270 per Ryker
   u <- wind_speeds * cos(theta)  # u (x-direction)
@@ -265,7 +265,6 @@ wind_vector_convert <- function(wind_speeds, wind_directions) {
 }
 
 #' @title Resample wind_speeds and wind_directions to the simulation resolution by interpolation
-#' @description This function
 #' @usage interpolate_wind_data(wind_speeds, wind_directions, sim_start, sim_end, puff_dt)
 #' @param wind_speeds A list of float values of wind speeds in m/s at each time stamp
 #' @param wind_directions A list of float values of wind directions in degrees at each time stamp following
@@ -274,9 +273,9 @@ wind_vector_convert <- function(wind_speeds, wind_directions) {
 #' @param sim_end Date & time stamps of simulation end time
 #' @param puff_dt A scalar time interval between two puffs
 #' @return Quantities corresponding to the conversion direction
-#' @export
 #' @examples
-#' interpolate_wind_data(speed_vec,direction_vec,start,end,60)
+#' interpolate_wind_data(speed_vec, direction_vec, start, end, 60)
+#' @export
 interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_end, puff_dt) {
   # convert wind speed and direction to u and v components
   wind_uv <- wind_vector_convert(wind_speeds, wind_directions)
@@ -320,9 +319,9 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #'
 #' @return Numeric. The pollutant concentration at the specified (x, y, z) location and time `t`.
 #' @return Quantities corresponding to concentration at sensor point(s)
-#' @export
 #' @examples
 #' gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+#' @export
 gpuff <- function(Q, stab.class,
                   x.p, y.p,
                   x.r.vec, y.r.vec, z.r.vec,
