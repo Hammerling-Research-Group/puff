@@ -35,8 +35,8 @@
 #' \dontrun{
 #'   set.seed(123)
 #'   sim_dt <- 10
-#'   puff_dt <- 60
-#'   output_dt <- 300
+#'   puff_dt <- 10
+#'   output_dt <- 60
 #'   start_time <- "2024-01-01 00:00:00"
 #'   end_time <- "2024-01-01 01:00:00"
 #'   source_coords <- c(0, 0, 2.5)
