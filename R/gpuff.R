@@ -308,60 +308,53 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' This function uses wind speed and direction components, advection adjustments, and stability class calculations to
 #'   accurately measure the dispersion of a puff in the atmosphere.
 #'
-#' @usage gaussian_puff(x, y, z, t, q, u, v, z0, wind_speed, sim_time)
+#' @usage gaussian_puff(Q, stab.class, x.p, y.p,x.r.vec, y.r.vec,,z.r.vec, total.dist, H, U)
 #'
-#' @param x Numeric. The x-coordinate (east-west) where the concentration is calculated.
-#' @param y Numeric. The y-coordinate (north-south) where the concentration is calculated.
-#' @param z Numeric. The z-coordinate (height) where the concentration is calculated.
-#' @param t Numeric. The time elapsed since the puff was released.
-#' @param q Numeric. The emission rate of the pollutant.
-#' @param u Numeric. The wind speed component in the x (east-west) direction.
-#' @param v Numeric. The wind speed component in the y (north-south) direction.
-#' @param z0 Numeric. The release height of the puff into the atmosphere.
-#' @param wind_speed Numeric. The total wind speed, calculated as the magnitude of the wind vector.
-#' @param sim_time POSIXct. The current simulation time, used to determine day or night for stability classification.
+#' @param Q Numeric. The emission rate of the pollutant.
+#' @param stab.class Character vector. Represents the stability class(es) ("A" to "F").
+#' @param x.p Numeric.  Unsure
+#' @param y.p Numeric. Unusure
+#' @param x.r.vec Numeric. The x-coordinate (east-west) where the concentration is calculated.
+#' @param y.r.vec Numeric. The y-coordinate (north-south) where the concentration is calculated.
+#' @param z.r.vec Numeric. The z-coordinate (height) where the concentration is calculated.
+#' @param total.dist Numeric. The total distance the puff has traveled in m.
+#' @param H Numeric. Unsure
+#' @param U Numeric.  Value representing the wind speed in meters per second.
 #'
 #' @return Numeric. The pollutant concentration at the specified (x, y, z) location and time `t`.
 #' @return Quantities corresponding to concentration at sensor point(s)
 #' @export
 #' @examples
-#' gaussian_puff(x, y, z, t, q, u, v, z0, wind_speed, sim_time)
-gaussian_puff <- function(x, y, z, t, q, u, v, z0, wind_speed, sim_time, x0, y0) {
-  # conversion factor for methane (from kg/m^3 to ppm)
-  conversion_factor <- (1e6) * (1.524)
+#' gaussian_puff(Q, stab.class, x.p, y.p,x.r.vec, y.r.vec,,z.r.vec, total.dist, H, U)
+gpuff <- function(Q, stab.class,
+                  x.p, y.p,
+                  x.r.vec, y.r.vec, z.r.vec,
+                  total.dist,
+                  H, U){
 
-  # downwind distance and determine stability class
-  downwind_distance <- wind_speed * t # centered per Ryker
-  stability_class <- get_stab_class(wind_speed, sim_time)
+  # converts kg/m^3 to ppm of METHANE
+  # Note that this is specific to methane
+  conversion.factor <- (1e6) * (1.524)
 
-  # compute sigmas (y and z) based on stability class and downwind distance
-  sigma_vals <- compute_sigma_vals(stability_class, downwind_distance)
-  sigma_y <- sigma_vals[1]
-  sigma_z <- sigma_vals[2]
+  # Convert total distance from m to km for stability class stuff
+  total.dist <- total.dist / 1000
 
-  # center sensor coordinates around emitting source
-  centered_x <- x - x0
-  centered_y <- y - y0
+  # Get sigma values for the stability classes passed to this function.
+  sigma.vec <- compute.sigma.vals(stab.class, total.dist)
+  sigma.y <- sigma.vec[1]
+  sigma.z <- sigma.vec[2]
 
-  # adjust positions via advection in x and y directions
-  x_advection <- centered_x - u * t
-  y_advection <- centered_y - v * t
+  # Calculate the contaminant concentration (kg/m^3) using Gaussian puff model
+  C  = (Q / ( (2*pi)^(3/2) * sigma.y^2 * sigma.z )) *
+    exp( -0.5 * ( (x.r.vec - x.p)^2 + (y.r.vec - y.p)^2 ) / sigma.y^2) *
+    ( exp( -0.5*(z.r.vec - H)^2/sigma.z^2 ) + exp( -0.5*(z.r.vec + H)^2 / sigma.z^2 ) )
 
-  exp_factor_x <- exp(-(x_advection^2 + y_advection^2) / (2 * sigma_y^2))
-  exp_factor_z1 <- exp(-(z - z0)^2 / (2 * sigma_z^2))
-  exp_factor_z2 <- exp(-(z + z0)^2 / (2 * sigma_z^2))
+  # Convert from kg/m^3 to ppm
+  C <- C*conversion.factor
 
-  # handle edge cases: if any factor is invalid, set concentration to 0
-  if (is.na(exp_factor_x) || is.na(exp_factor_z1) || is.na(exp_factor_z2) ||
-      is.nan(exp_factor_x) || is.nan(exp_factor_z1) || is.nan(exp_factor_z2) ||
-      (exp_factor_x == 0 || (exp_factor_z1 + exp_factor_z2) == 0)) {
-    concentration <- 0
-  } else {
-    # compute concentration with the corrected factors
-    concentration <- ((q / ((2 * pi)^(3/2) * sigma_y^2 * sigma_z)) *
-                        exp_factor_x * (exp_factor_z1 + exp_factor_z2)) *
-      conversion_factor
-  }
+  # Convert NAs to zeros. NAs come from NA sigma values, which occur when the
+  # total distance is zero
+  C <- ifelse(is.na(C), 0, C)
 
-  return(concentration)
+  return(C)
 }
