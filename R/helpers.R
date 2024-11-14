@@ -1,12 +1,12 @@
 #' @title Determine Whether a Time is During the Day
 #' @description This function checks the time and classifies it as day or not
-#' @usage is_day(time)
+#' @usage is.day(time)
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character T or F representing whether or not it is daytime.
 #' @export
 #' @examples
-#' Filler
-is_day <- function(time){
+#' is.day(8)
+is.day <- function(time){
   # function to check if a time is during the day
   # will be used to assign stability class in forward model
   # NOTE: times currently set to work in summer, future work will make this
@@ -23,28 +23,26 @@ is_day <- function(time){
 #' @title Determine Stability Class Based on Wind Speed and Time of Day
 #' @description This function calculates the stability class based on wind speed (U) and the time of day.
 #'              It categorizes the atmosphere's stability as one of several classes (A-F) depending on the inputs.
-#' @usage get_stab_class(U, time)
+#' @usage get.stab.class(U, time)
 #' @param U A numeric value representing the wind speed in meters per second.
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character vector representing the stability class(es) ("A" to "F").
 #' @export
 #' @examples
-#' get_stab_class(3, 12)
-get_stab_class <- function(U, time){
-
-  # TODO there's a lot of redundancy here. If statements could be simplified and the value for is_day could be computed once instead of getting re-called for each if statement -Ryker
+#' get.stab.class(3, 12)
+get.stab.class <- function(U, time){
 
   # Determine stability class based on wind speed and time of day
   if (U < 2){
-    stab.class <- ifelse(is_day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
+    stab.class <- ifelse(is.day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
   } else if (U >= 2 & U < 3){
-    stab.class <- ifelse(is_day(time), list(c("B")),      list(c("E", "F")))[[1]]
+    stab.class <- ifelse(is.day(time), list(c("B")),      list(c("E", "F")))[[1]]
   } else if (U >= 3 & U < 5){
-    stab.class <- ifelse(is_day(time), list(c("B", "C")), list(c("D", "E")))[[1]]
+    stab.class <- ifelse(is.day(time), list(c("B", "C")), list(c("D", "E")))[[1]]
   } else if (U >= 5 & U < 6){
-    stab.class <- ifelse(is_day(time), list(c("C", "D")), list(c("D")))[[1]]
+    stab.class <- ifelse(is.day(time), list(c("C", "D")), list(c("D")))[[1]]
   } else {
-    stab.class <- ifelse(is_day(time), list(c("D")),      list(c("D")))[[1]]
+    stab.class <- ifelse(is.day(time), list(c("D")),      list(c("D")))[[1]]
   }
 
   return(stab.class)
@@ -54,16 +52,14 @@ get_stab_class <- function(U, time){
 #' @title Find Average Sigma Values Based On Stability Class and Total Distance Traveled
 #' @description This function calculates the average sigma values based on stability class and the total distance traveled.
 #'              It reports the averages of the sigma values dependent on the inputs.
-#' @usage compute_sigma_vals(stab.class, total.dist)
+#' @usage compute.sigma.vals(stab.class, total.dist)
 #' @param stab.class A character vector representing the stability class(es) ("A" to "F").
 #' @param total.dist A numeric value representing the distance traveled in --units--.
 #' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
 #' @export
 #' @examples
-#' compute_sigma_vals(A, 0.7)
-compute_sigma_vals <- function(stab.class, total.dist){
-
-  # TODO note: these table lookups assume total.dist is in kilometers. I recommend taking positions in lat/long or meters (as I think it's the most convenient for the group) and converting from meters to kilometers somewhere before or inside this function. Note that if you take input as lat/long, you'll have already needed to convert to meters. -Ryker
+#' compute.sigma.vals(A, 0.7)
+compute.sigma.vals <- function(stab.class, total.dist){
 
   n.stab.class <- length(stab.class)
 
@@ -148,6 +144,7 @@ compute_sigma_vals <- function(stab.class, total.dist){
         a <- 44.053
         b <- 0.51179
       }
+
 
       c <- 8.333
       d <- 0.72382
@@ -308,7 +305,7 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' This function uses wind speed and direction components, advection adjustments, and stability class calculations to
 #'   accurately measure the dispersion of a puff in the atmosphere.
 #'
-#' @usage gaussian_puff(Q, stab.class, x.p, y.p,x.r.vec, y.r.vec,,z.r.vec, total.dist, H, U)
+#' @usage gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
 #'
 #' @param Q Numeric. The emission rate of the pollutant.
 #' @param stab.class Character vector. Represents the stability class(es) ("A" to "F").
@@ -325,7 +322,7 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' @return Quantities corresponding to concentration at sensor point(s)
 #' @export
 #' @examples
-#' gaussian_puff(Q, stab.class, x.p, y.p,x.r.vec, y.r.vec,,z.r.vec, total.dist, H, U)
+#' gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
 gpuff <- function(Q, stab.class,
                   x.p, y.p,
                   x.r.vec, y.r.vec, z.r.vec,
