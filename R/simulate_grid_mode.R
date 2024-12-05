@@ -1,0 +1,139 @@
+#' Simulate Atmospheric Concentration on a Grid
+#'
+#' Simulates atmospheric concentrations at every grid point over time using the Gaussian puff forward model.
+#' Concentrations are calculated based on emission rates, wind conditions, and puff dispersion.
+#'
+#' @usage simulate_grid_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
+#'   emission_rate, wind_data, grid_coords, puff_duration)
+#'
+#' @param sim_dt Integer. Simulation time step (in seconds), determining how frequently the simulation
+#'   updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.
+#' @param puff_dt Integer. Time interval (in seconds), determining how frequently new puffs are emitted into
+#'   the simulation.
+#' @param output_dt Integer. Desired time resolution (in seconds) for the final output of concentrations.
+#' @param start_time POSIXct. Start time of the simulation.
+#' @param end_time POSIXct. End time of the simulation.
+#' @param source_coords Numeric vector. Coordinates of the emission source in meters (x, y, z).
+#'   E.g, \code{c(x = 10, y = 0, z = 1.5)}.
+#' @param emission_rate Numeric. Emission rate of the source in kg/s.
+#' @param wind_data Data frame. Wind data containing columns \code{wind_u} and \code{wind_v},
+#'   representing wind components in the x and y directions, respectively, for each simulation step.
+#' @param grid_coords List. A list with three numeric vectors specifying the grid points for \code{x}, \code{y}, and \code{z}.
+#'   E.g., \code{list(x = seq(0, 50, by = 1), y = seq(0, 50, by = 1), z = c(2.5))}.
+#' @param puff_duration Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.
+#'
+#' @return An array of methane concentrations at every grid point over time
+#'
+#' @export
+simulate_grid_mode <- function(sim_dt, puff_dt, output_dt,
+                               start_time, end_time,
+                               source_coords, emission_rate,
+                               wind_data, grid_coords,
+                               puff_duration = 1200) {
+
+  # setup
+  sim_timestamps <- seq(from = as.POSIXct(start_time),
+                        to = as.POSIXct(end_time),
+                        by = sim_dt)
+
+  n_steps <- length(sim_timestamps)
+
+  output_timestamps <- seq(from = as.POSIXct(start_time),
+                           to = as.POSIXct(end_time),
+                           by = output_dt)
+
+  n_output_steps <- length(output_timestamps)
+
+  x_seq <- grid_coords$x
+  y_seq <- grid_coords$y
+  z_seq <- grid_coords$z
+
+  grid_dim <- c(length(x_seq), length(y_seq), length(z_seq))
+
+  n_gridpoints <- prod(grid_dim)
+
+  # init a 2D matrix for output
+  concentrations <- matrix(0, nrow = n_output_steps, ncol = n_gridpoints)
+
+  # init active puffs as a data frame
+  active_puffs <- data.frame(
+    x = numeric(0),
+    y = numeric(0),
+    z = numeric(0),
+    time_emitted = numeric(0),
+    time_elapsed = numeric(0)
+  )
+
+  # loop over sim steps
+  for (t_idx in seq_len(n_steps)) {
+    current_time <- sim_timestamps[t_idx]
+
+    wind_u <- wind_data$wind_u[t_idx]
+    wind_v <- wind_data$wind_v[t_idx]
+    wind_speed <- sqrt(wind_u^2 + wind_v^2)
+
+    stab_class <- get.stab.class(wind_speed, current_time)
+
+    # emit new puffs if it's a puff emission interval
+    if (t_idx == 1 || as.numeric(difftime(current_time, start_time, units = "secs")) %% puff_dt == 0) {
+      active_puffs <- rbind(active_puffs, data.frame(
+        x = source_coords[1],
+        y = source_coords[2],
+        z = source_coords[3],
+        time_emitted = as.numeric(difftime(current_time, start_time, units = "secs")),
+        time_elapsed = 0
+      ))
+    }
+
+    # update positions and lifetimes of *active* puffs
+    active_puffs$time_elapsed <- as.numeric(difftime(current_time, start_time, units = "secs")) - active_puffs$time_emitted
+    active_puffs$x <- active_puffs$x + wind_u * sim_dt
+    active_puffs$y <- active_puffs$y + wind_v * sim_dt
+
+    active_puffs <- active_puffs[active_puffs$time_elapsed <= puff_duration, ]
+
+    # calculate concentration contributions for each grid point
+    grid_concentrations <- array(0, dim = grid_dim)
+    for (puff_idx in seq_len(nrow(active_puffs))) {
+      puff_x <- active_puffs$x[puff_idx]
+      puff_y <- active_puffs$y[puff_idx]
+      puff_z <- active_puffs$z[puff_idx]
+
+      for (i in seq_along(x_seq)) {
+        for (j in seq_along(y_seq)) {
+          for (k in seq_along(z_seq)) {
+            grid_x <- x_seq[i]
+            grid_y <- y_seq[j]
+            grid_z <- z_seq[k]
+
+            # dist from puff to grid point
+            total_dist <- sqrt((grid_x - puff_x)^2 + (grid_y - puff_y)^2)
+
+            concentration <- gpuff(
+              Q = emission_rate,
+              stab.class = stab_class,
+              x.p = puff_x,
+              y.p = puff_y,
+              x.r.vec = grid_x,
+              y.r.vec = grid_y,
+              z.r.vec = grid_z,
+              total.dist = total_dist,
+              H = source_coords[3],
+              U = wind_speed
+            )
+
+            grid_concentrations[i, j, k] <- grid_concentrations[i, j, k] + concentration
+          }
+        }
+      }
+    }
+
+    # adj concentrations to match output time resolution
+    if (t_idx %% (output_dt / sim_dt) == 0) {
+      output_idx <- t_idx / (output_dt / sim_dt)
+      concentrations[output_idx, ] <- as.vector(grid_concentrations)
+    }
+  }
+
+  return(concentrations)
+}
