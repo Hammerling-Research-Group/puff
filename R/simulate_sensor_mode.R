@@ -63,6 +63,7 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
   sim_timestamps <- seq(from = as.POSIXct(start_time),
                         to = as.POSIXct(end_time),
                         by = sim_dt)
+
   n_steps <- length(sim_timestamps)
 
   output_timestamps <- seq(from = as.POSIXct(start_time),
@@ -87,31 +88,31 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
   for (t_idx in seq_len(n_steps)) {
     current_time <- sim_timestamps[t_idx]
 
-    # store wind data for current step
     wind_u <- wind_data$wind_u[t_idx]
     wind_v <- wind_data$wind_v[t_idx]
     wind_speed <- sqrt(wind_u^2 + wind_v^2)
 
-    # dynamically determine stability class based on wind speed and time of day
     stab_class <- get.stab.class(wind_speed, current_time)
 
-    # emit new puffs if arrived at a puff emission interval
+    # emit new puffs if it's a puff emission interval
     if (t_idx == 1 || as.numeric(difftime(current_time, start_time, units = "secs")) %% puff_dt == 0) {
-      active_puffs <- rbind(active_puffs, data.frame(
+      new_puffs <- data.frame(
         x = source_coords[1],
         y = source_coords[2],
         z = source_coords[3],
         time_emitted = as.numeric(difftime(current_time, start_time, units = "secs")),
-        time_elapsed = 0
-      ))
+        time_elapsed = 0,
+        wind_u = wind_u,
+        wind_v = wind_v
+      )
+      active_puffs <- rbind(active_puffs, new_puffs)
     }
 
     # update positions and lifetimes of active puffs per sim_dt
     active_puffs$time_elapsed <- as.numeric(difftime(current_time, start_time, units = "secs")) - active_puffs$time_emitted
-    active_puffs$x <- active_puffs$x + wind_u * sim_dt
-    active_puffs$y <- active_puffs$y + wind_v * sim_dt
+    active_puffs$x <- active_puffs$x + active_puffs$wind_u * sim_dt
+    active_puffs$y <- active_puffs$y + active_puffs$wind_v * sim_dt
 
-    # drop dead/expired puffs
     active_puffs <- active_puffs[active_puffs$time_elapsed <= puff_duration, ]
 
     # loops to calc concentration contributions for each sensor
@@ -123,6 +124,7 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
       for (puff in seq_len(nrow(active_puffs))) {
         puff_x <- active_puffs$x[puff]
         puff_y <- active_puffs$y[puff]
+
         total_dist <- sqrt((sensor_x - puff_x)^2 + (sensor_y - puff_y)^2)
 
         # calculate concentration

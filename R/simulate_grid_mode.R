@@ -76,24 +76,28 @@ simulate_grid_mode <- function(sim_dt, puff_dt, output_dt,
 
     # emit new puffs if it's a puff emission interval
     if (t_idx == 1 || as.numeric(difftime(current_time, start_time, units = "secs")) %% puff_dt == 0) {
-      active_puffs <- rbind(active_puffs, data.frame(
+      new_puffs <- data.frame(
         x = source_coords[1],
         y = source_coords[2],
         z = source_coords[3],
         time_emitted = as.numeric(difftime(current_time, start_time, units = "secs")),
-        time_elapsed = 0
-      ))
+        time_elapsed = 0,
+        wind_u = wind_u,
+        wind_v = wind_v
+      )
+      active_puffs <- rbind(active_puffs, new_puffs)
     }
 
-    # update positions and lifetimes of *active* puffs
+    # update positions and lifetimes of active puffs per sim_dt
     active_puffs$time_elapsed <- as.numeric(difftime(current_time, start_time, units = "secs")) - active_puffs$time_emitted
-    active_puffs$x <- active_puffs$x + wind_u * sim_dt
-    active_puffs$y <- active_puffs$y + wind_v * sim_dt
+    active_puffs$x <- active_puffs$x + active_puffs$wind_u * sim_dt
+    active_puffs$y <- active_puffs$y + active_puffs$wind_v * sim_dt
 
     active_puffs <- active_puffs[active_puffs$time_elapsed <= puff_duration, ]
 
     # calculate concentration contributions for each grid point
     grid_concentrations <- array(0, dim = grid_dim)
+
     for (puff_idx in seq_len(nrow(active_puffs))) {
       puff_x <- active_puffs$x[puff_idx]
       puff_y <- active_puffs$y[puff_idx]
