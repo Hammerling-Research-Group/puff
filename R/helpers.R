@@ -246,6 +246,197 @@ compute.sigma.vals <- function(stab.class, total.dist){
   return(c(sigma.y, sigma.z))
 }
 
+#' @title Find Average Sigma Values Based On Stability Class and Total Distance Traveled
+#' @description This function calculates the average sigma values based on stability class and the total distance traveled.
+#'              It reports the averages of the sigma values dependent on the inputs.
+#' @usage compute.sigma.vals2(stab.class, total.dist)
+#' @param stab.class A character vector representing the stability class(es) ("A" to "F").
+#' @param total.dist A numeric value representing the distance traveled in --units--.
+#' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
+#' @examples
+#' compute.sigma.vals2(A, 0.7)
+#' @export
+compute.sigma.vals2 <- function(stab.class, total.dist){
+
+  n.stab.class <- length(stab.class)
+
+  sigma.y.vals <- sigma.z.vals <- vector(length = n.stab.class)
+
+  if (total.dist <= 0){
+    return(c(-1,-1))
+  }
+
+  # Loop through stability classes and get a, b, c, and d parameter values
+  # based on the stability class and total distance traveled.
+  for (stab.class.it in 1:n.stab.class){
+
+    if (stab.class[stab.class.it] == "A"){
+
+      if (total.dist <= 0.1){
+        a <- 122.8
+        b <- 0.9447
+      } else if (total.dist <= 0.15){
+        a <- 158.08
+        b <- 1.0542
+      } else if (total.dist <= 0.20){
+        a <- 170.22
+        b <- 1.0932
+      } else if (total.dist <= 0.25){
+        a <- 179.52
+        b <- 1.1262
+      } else if (total.dist <= 0.3){
+        a <- 217.41
+        b <- 1.2644
+      } else if (total.dist <= 0.4){
+        a <- 258.89
+        b <- 1.4094
+      } else if (total.dist <= 0.5){
+        a <- 346.75
+        b <- 1.7283
+      } else {
+        a <- 453.85
+        b <- 2.1166
+      }
+
+      c <- 24.1670
+      d <- 2.5334
+
+    } else if (stab.class[stab.class.it] == "B"){
+
+      if (total.dist <= 0.2){
+        a <- 90.673
+        b <- 0.93198
+      } else if (total.dist <= 0.4){
+        a <- 98.483
+        b <- 0.98332
+      } else {
+        a <- 109.3
+        b <- 1.09710
+      }
+
+      c <- 18.333
+      d <- 1.8096
+
+    } else if (stab.class[stab.class.it] == "C"){
+
+      a <- 61.141
+      b <- 0.91465
+      c <- 12.5
+      d <- 1.0857
+
+    } else if (stab.class[stab.class.it] == "D"){
+
+      if (total.dist <= 0.3){
+        a <- 34.459
+        b <- 0.86974
+      } else if (total.dist <= 1){
+        a <- 32.093
+        b <- 0.81066
+      } else if (total.dist <= 3){
+        a <- 32.093
+        b <- 0.64403
+      } else if (total.dist <= 10){
+        a <- 33.504
+        b <- 0.60486
+      } else if (total.dist <= 30){
+        a <- 36.65
+        b <- 0.56589
+      } else {
+        a <- 44.053
+        b <- 0.51179
+      }
+
+
+      c <- 8.333
+      d <- 0.72382
+
+    } else if (stab.class[stab.class.it] == "E"){
+
+      if (total.dist <= 0.1){
+        a <- 24.260
+        b <- 0.83660
+      } else if (total.dist <= 0.3){
+        a <- 23.331
+        b <- 0.81956
+      } else if (total.dist <= 1){
+        a <- 21.628
+        b <- 0.75660
+      } else if (total.dist <= 2){
+        a <- 21.628
+        b <- 0.63077
+      } else if (total.dist <= 4){
+        a <- 22.534
+        b <- 0.57154
+      } else if (total.dist <= 10){
+        a <- 24.703
+        b <- 0.50527
+      } else if (total.dist <= 20){
+        a <- 26.970
+        b <- 0.46713
+      } else if (total.dist <= 40){
+        a <- 35.420
+        b <- 0.37615
+      } else {
+        a <- 47.618
+        b <- 0.29592
+      }
+
+      c <- 6.25
+      d <- 0.54287
+
+    } else if (stab.class[stab.class.it] == "F"){
+
+      if (total.dist <= 0.2){
+        a <- 15.209
+        b <- 0.81558
+      } else if (total.dist <= 0.7) {
+        a <- 14.457
+        b <- 0.78407
+      } else if (total.dist <= 1){
+        a <- 13.953
+        b <- 0.68465
+      } else if (total.dist <= 2){
+        a <- 13.953
+        b <- 0.63227
+      } else if (total.dist <= 3){
+        a <- 14.823
+        b <- 0.54503
+      } else if (total.dist <= 7){
+        a <- 16.187
+        b <- 0.46490
+      } else if (total.dist <= 15){
+        a <- 17.836
+        b <- 0.41507
+      } else if (total.dist <= 30){
+        a <- 22.651
+        b <- 0.32681
+      } else if (total.dist <= 60){
+        a <- 27.074
+        b <- 0.27436
+      } else {
+        a <- 34.219
+        b <- 0.21716
+      }
+
+      c <- 4.1667
+      d <- 0.36191
+    }
+
+    big.theta <- 0.017453293 * (c - d * log(total.dist))
+    sigma.y.vals[stab.class.it] <- 465.11628 * total.dist * tan(big.theta)
+
+    sigma.z <- a * (total.dist)^b
+    sigma.z.vals[stab.class.it] <- ifelse(sigma.z > 5000, 5000, sigma.z)
+
+  }
+
+  # Average sigma values over stability classes that were passed to this function.
+  sigma.y <- sum(sigma.y.vals) / n.stab.class
+  sigma.z <- sum(sigma.z.vals) / n.stab.class
+
+  return(c(sigma.y, sigma.z))
+}
+
 # C++ version of get.sigma.vals(); much
 if (!requireNamespace("Rcpp", quietly = TRUE)) install.packages("Rcpp")
 library(Rcpp)
@@ -485,6 +676,7 @@ gpuff <- function(Q, stab.class,
 
   # Get sigma values for the stability classes passed to this function.
   sigma.vec <- compute.sigma.vals(stab.class, total.dist) # original
+  #sigma.vec <- compute.sigma.vals2(stab.class, total.dist) # R alt version (v2)
   #sigma.vec <- compute_sigma_vals_cpp(stab.class, total.dist) # Rcpp version (v1)
   #sigma.vec <- compute_sigma_vals_cpp2(stab.class, total.dist) # Rcpp version (v2)
 
