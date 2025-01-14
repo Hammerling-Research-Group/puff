@@ -7,13 +7,13 @@
 gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
 }
 \arguments{
-\item{Q}{Numeric. The emission rate of the pollutant.}
+\item{Q}{Numeric. Mass per puff. E.g., for 100 puffs/hour of a 100 kg/hr emission, put 1 kg of mass into each puff.}
 
-\item{stab.class}{Character vector. Represents the stability class(es) ("A" to "F").}
+\item{stab.class}{Character vector. Stability class ("A" to "F").}
 
-\item{x.p}{Numeric.  Unsure}
+\item{x.p}{Numeric. Puff position in the X direction.}
 
-\item{y.p}{Numeric. Unusure}
+\item{y.p}{Numeric. Puff position in the Y direction.}
 
 \item{x.r.vec}{Numeric. The x-coordinate (east-west) where the concentration is calculated.}
 
@@ -21,16 +21,14 @@ gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
 
 \item{z.r.vec}{Numeric. The z-coordinate (height) where the concentration is calculated.}
 
-\item{total.dist}{Numeric. The total distance the puff has traveled in m.}
+\item{total.dist}{Numeric. The total distance the puff has traveled from the source in m.}
 
-\item{H}{Numeric. Unsure}
+\item{H}{Numeric. Source height.}
 
-\item{U}{Numeric.  Value representing the wind speed in meters per second.}
+\item{U}{Numeric. Wind speed in m/s.}
 }
 \value{
-Numeric. The pollutant concentration at the specified (x, y, z) location and time `t`.
-
-Quantities corresponding to concentration at sensor point(s)
+Numeric. Pollutant concentration at the specified (x, y, z) locations and time `t`.
 }
 \description{
 Calculates the concentration of an emission event at a specified location and time due to a Gaussian puff.
