@@ -32,6 +32,17 @@ is.day <- function(time){
 #' @export
 get.stab.class <- function(U, time){
 
+  # chk if U is missing or NA
+  if (is.na(U) || is.null(U)) {
+    warning("Wind speed (U) is missing. Assigning neutral stability class 'D'. Correct if desired.")
+    return("D")  # default: neutral stability
+  }
+
+  # ensure U is numeric
+  if (!is.numeric(U)) {
+    stop("Wind speed (U) must be numeric.")
+  }
+
   # Determine stability class based on wind speed and time of day
   if (U < 2){
     stab.class <- ifelse(is.day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
@@ -60,6 +71,16 @@ get.stab.class <- function(U, time){
 #' compute.sigma.vals(A, 0.7)
 #' @export
 compute.sigma.vals <- function(stab.class, total.dist){
+
+  # chk: invalid total.dist
+  if (is.na(total.dist) || is.null(total.dist)) {
+    warning("Total distance (total.dist) is NA or NULL. Assigning sigma values as NA.")
+    return(c(NA, NA))
+  }
+
+  if (!is.numeric(total.dist)) {
+    stop("Total distance (total.dist) must be numeric.")
+  }
 
   n.stab.class <- length(stab.class)
 
@@ -239,8 +260,8 @@ compute.sigma.vals <- function(stab.class, total.dist){
   }
 
   # Average sigma values over stability classes that were passed to this function.
-  sigma.y <- mean(sigma.y.vals)
-  sigma.z <- mean(sigma.z.vals)
+  sigma.y <- mean(sigma.y.vals, na.rm = TRUE)
+  sigma.z <- mean(sigma.z.vals, na.rm = TRUE)
 
   return(c(sigma.y, sigma.z))
 }
