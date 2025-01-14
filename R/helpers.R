@@ -305,19 +305,18 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #'
 #' @usage gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
 #'
-#' @param Q Numeric. The emission rate of the pollutant.
-#' @param stab.class Character vector. Represents the stability class(es) ("A" to "F").
-#' @param x.p Numeric.  Unsure
-#' @param y.p Numeric. Unusure
+#' @param Q Numeric. Mass per puff. E.g., for 100 puffs/hour of a 100 kg/hr emission, put 1 kg of mass into each puff.
+#' @param stab.class Character vector. Stability class ("A" to "F").
+#' @param x.p Numeric. Puff position in the X direction.
+#' @param y.p Numeric. Puff position in the Y direction.
 #' @param x.r.vec Numeric. The x-coordinate (east-west) where the concentration is calculated.
 #' @param y.r.vec Numeric. The y-coordinate (north-south) where the concentration is calculated.
 #' @param z.r.vec Numeric. The z-coordinate (height) where the concentration is calculated.
-#' @param total.dist Numeric. The total distance the puff has traveled in m.
-#' @param H Numeric. Unsure
-#' @param U Numeric.  Value representing the wind speed in meters per second.
+#' @param total.dist Numeric. The total distance the puff has traveled from the source in m.
+#' @param H Numeric. Source height.
+#' @param U Numeric. Wind speed in m/s.
 #'
-#' @return Numeric. The pollutant concentration at the specified (x, y, z) location and time `t`.
-#' @return Quantities corresponding to concentration at sensor point(s)
+#' @return Numeric. Pollutant concentration at the specified (x, y, z) locations and time `t`.
 #' @examples
 #' gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
 #' @export
@@ -334,7 +333,7 @@ gpuff <- function(Q, stab.class,
   total.dist <- total.dist / 1000
 
   # Get sigma values for the stability classes passed to this function.
-  sigma.vec <- compute.sigma.vals(stab.class, total.dist) # original
+  sigma.vec <- compute.sigma.vals(stab.class, total.dist)
 
   sigma.y <- sigma.vec[1]
   sigma.z <- sigma.vec[2]
