@@ -410,7 +410,43 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #' }
 single_emission_rate_plot <- function(sim_dt, puff_dt, output_dt, start_time, end_time,
                                       source_coords, emission_rate, wind_data, sensor_coords) {
-  # Function implementation
+  sensor_concentrations <- simulate_sensor_mode(
+    sim_dt = sim_dt,
+    puff_dt = puff_dt,
+    output_dt = output_dt,
+    start_time = start_time,
+    end_time = end_time,
+    source_coords = source_coords,
+    emission_rate = emission_rate,
+    wind_data = wind_data,
+    sensor_coords = sensor_coords
+  )
+
+  sensor_concentrations$timestamp <- as.POSIXct(sensor_concentrations$Group.1, format = "%Y-%m-%d %H:%M:%S")
+
+  sensor_data <- data.frame(
+    x = rep(sensor_coords[1], nrow(sensor_concentrations)),
+    y = rep(sensor_coords[2], nrow(sensor_concentrations)),
+    timestamp = sensor_concentrations$timestamp,
+    concentration = sensor_concentrations$Sensor_1
+  )
+
+  sensor_data$time_label <- format(sensor_data$timestamp, "%H:%M")
+
+  ggplot(sensor_data, aes(x = timestamp, y = y, fill = concentration)) +
+    geom_tile() +
+    scale_fill_gradientn(colors = c("blue", "red", "yellow"), name = "Concentration") +
+    labs(
+      title = "Sensor Concentrations Over Time",
+      x = "Time (Hour:Minute)",
+      y = NULL
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank()
+    )
 }
 
 #' Plot Time Series of Sensor Concentrations
@@ -427,8 +463,29 @@ single_emission_rate_plot <- function(sim_dt, puff_dt, output_dt, start_time, en
 #' print(plot)
 #' }
 time_series_plot <- function(sensor_concentrations) {
-  # Function implementation
+  sensor_long <- sensor_concentrations |>
+    mutate(time2 = seq(0, nrow(sensor_concentrations)-1)) |>
+    pivot_longer(
+      cols = starts_with("Sensor"),
+      names_to = "Sensor",
+      values_to = "Concentration"
+    ) |>
+    rename(time = Group.1)
+
+  sensor_long |>
+    mutate(Sensor = str_replace(Sensor, "Sensor_1", "Test Sensor")) |>
+    ggplot(aes(x = time2, y = Concentration, group = Sensor)) +
+    geom_line() +
+    facet_wrap(~ Sensor) +
+    labs(
+      title = "Sensor Concentrations Over Time",
+      subtitle = "With Time Steps",
+      x = "Time from emission start (min)",
+      y = "Concentration"
+    ) +
+    theme_bw()
 }
+
 
 #' Faceted Time Series Plot of Methane Concentrations and Wind Data
 #'
@@ -451,8 +508,49 @@ time_series_plot <- function(sensor_concentrations) {
 #' print(plot)
 #' }
 faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequence) {
-  # Function implementation
+  # Rename columns for clarity
+  sensor_concentrations <- sensor_concentrations %>%
+    rename(
+      time = Group.1,
+      concentration = Sensor_1
+    )
+
+  # Subset wind data to match time steps
+  wind_u_subset <- wind_data$wind_u[seq(1, length(time_sequence))]
+  wind_v_subset <- wind_data$wind_v[seq(1, length(time_sequence))]
+
+  # Combine wind data with concentrations
+  sensor_concentrations <- sensor_concentrations %>%
+    mutate(wind_u = wind_u_subset[1:nrow(sensor_concentrations)],
+           wind_v = wind_v_subset[1:nrow(sensor_concentrations)])
+
+  # Transform data for plotting
+  sensor_concentrations_long <- sensor_concentrations %>%
+    pivot_longer(
+      cols = c(concentration, wind_u, wind_v),  # Include concentration and wind data
+      names_to = "variable",
+      values_to = "value"
+    )
+  facet_labels <- c(
+    concentration = "Methane Concentration (kg/m³)",
+    wind_u = "Wind Component U (m/s)",
+    wind_v = "Wind Component V (m/s)"
+  )
+
+  # Create a faceted plot with labels
+  ggplot(sensor_concentrations_long, aes(x = time, y = value, color = variable, group = variable)) +
+    geom_line() +
+    geom_point() +
+    facet_wrap(~ variable, scales = "free_y", ncol = 1, labeller = labeller(variable = facet_labels)) +
+    labs(
+      title = "Time Series of Methane Concentration and Wind Data",
+      x = "Time",
+      y = "Value"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "none")
 }
+
 
 #' Create a Site Map of Sensors and Sources
 #'
@@ -474,5 +572,28 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
 #' print(plot)
 #' }
 create_site_map <- function(sensors, sources) {
-  # Function implementation
+  # Combine sensors and sources into one data frame
+  sensors$type <- "Sensor"
+  sources$type <- "Source"
+  combined <- rbind(
+    sensors,
+    sources
+  )
+
+  ggplot(combined, aes(x = x, y = y, shape = type, color = type)) +
+    # Plot points with different shapes and colors based on the 'type'
+    geom_point(size = 4, stroke = 1.5) +
+    scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
+    scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
+    # Add labels and theme
+    labs(
+      title = "Site Map of Locations",
+      x = "Longitude",
+      y = "Latitude",
+      shape = "Location Type",  # Legend title for shapes
+      color = "Location Type"   # Legend title for colors
+    ) +
+    theme_minimal() +
+    theme(legend.position = "bottom")
 }
+
