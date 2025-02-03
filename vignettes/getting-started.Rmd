@@ -1,0 +1,68 @@
+---
+title: "Getting Started with `puff`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{getting-started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r eval = FALSE}
+library(puff)
+```
+
+```{r echo = FALSE}
+devtools::load_all()
+```
+
+Let's walk through a basic use case for the `puff` package. To do so, we will cover: 
+
+  - Sensor mode
+  - Grid mode
+  
+For each of these "modes", the workflow typically includes something like running the simulation to produce emission concentration values (either at individual *sensor* locations or over the full *grid* of the site), and then plot the results in a variety of ways with a variety of views. The latter task is at the heart of this package, which is the ability to produce accurate, clean, and publication-ready plots. Therefore, this vigentte focuses mostly on the plotting capabilities of `puff` rather than the siumulation / modeling part. 
+
+## Run the Simulation: Sensor Mode
+
+Let's start simply with sensor mode. 
+
+X
+
+Inspect the output: 
+
+X
+
+## Plot the Results 
+
+Now, there are a variety of plotting options for the sensor mode. We will start with X. 
+
+X
+
+## Run the Simulation: Grid Mode
+
+Now, let's demonstrate the grid mode in action. Start as before with the simulation to produce the concentration results across the grid. 
+
+X
+
+Inspect as before: 
+
+X
+
+## Plot the Results
+
+There are some more options for plotting in grid mode, given the increased dimensionality of the space. Of note, we can plot in 2D or 3D, and in this we have additional options for animated plots. 
+
+Let's take a look at X first. 
+
+X
+
+## Concluding Remarks
+
+This vignette has focused on introducing users to a very basic version of the `puff` package. The package does much more, and we encourage wide and creative use to make the most of this powerful package for analyzing and reporting research about methane emissions. 

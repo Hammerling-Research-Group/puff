@@ -12,3 +12,7 @@ LazyData: true
 URL: https://github.com/Hammerling-Research-Group/puff
 BugReports: https://github.com/Hammerling-Research-Group/puff/issues
 RoxygenNote: 7.3.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
