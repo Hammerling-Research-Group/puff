@@ -373,56 +373,32 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
   return(plot)
 }
 
-#' Simulate and Plot Single Emission Rate Sensor Concentrations
+#' Plot Single Emission Rate Sensor Concentrations
 #'
-#' This function simulates sensor concentrations for a single emission rate and generates a plot.
+#' This function generates a plot of sensor concentrations over time using
+#' precomputed sensor data (e.g., from `simulate_sensor_mode()`).
 #'
-#' @param sim_dt Numeric. Simulation time step in seconds.
-#' @param puff_dt Numeric. Puff release interval in seconds.
-#' @param output_dt Numeric. Output time step in seconds.
-#' @param start_time POSIXct. Start time of the simulation.
-#' @param end_time POSIXct. End time of the simulation.
-#' @param source_coords Numeric vector. Coordinates (x, y, z) of the emission source.
-#' @param emission_rate Numeric. Emission rate in units of concentration.
-#' @param wind_data List. Wind data containing "wind_u" and "wind_v" components.
-#' @param sensor_coords Matrix. Coordinates of sensors (one per row).
+#' @param sensor_concentrations Data frame. Output from a sensor simulation function,
+#'   which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
+#'   for the sensor concentration values.
+#' @param sensor_coords Numeric vector. Coordinates (x, y, z) of the sensor.
 #'
 #' @return A ggplot object showing sensor concentrations over time.
-#' @export
-#' @examples
-#' \dontrun{
-#' sim_dt <- 1
-#' puff_dt <- 10
-#' output_dt <- 60
-#' start_time <- as.POSIXct("2025-01-01 00:00:00")
-#' end_time <- as.POSIXct("2025-01-01 01:00:00")
-#' source_coords <- c(0, 0, 0)
-#' emission_rate <- 5.0
-#' wind_data <- list(wind_u = rep(1, 60), wind_v = rep(0, 60))
-#' sensor_coords <- matrix(c(10, 0, 0), ncol = 3)
 #'
-#' # Generate the plot
-#' plot <- single_emission_rate_plot(
-#'   sim_dt, puff_dt, output_dt, start_time, end_time,
-#'   source_coords, emission_rate, wind_data, sensor_coords
-#' )
-#' print(plot)
+#' @export
+#'
+#'@examples
+#' \dontrun{
+#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
+#'
+#' sensor_coords <- matrix(c(10, 0, 0), ncol = 3)
+#' single_emission_rate_plot(sensor_concentrations, sensor_coords)
 #' }
-single_emission_rate_plot <- function(sim_dt, puff_dt, output_dt, start_time, end_time,
-                                      source_coords, emission_rate, wind_data, sensor_coords) {
-  sensor_concentrations <- simulate_sensor_mode(
-    sim_dt = sim_dt,
-    puff_dt = puff_dt,
-    output_dt = output_dt,
-    start_time = start_time,
-    end_time = end_time,
-    source_coords = source_coords,
-    emission_rate = emission_rate,
-    wind_data = wind_data,
-    sensor_coords = sensor_coords
-  )
+single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
-  sensor_concentrations$timestamp <- as.POSIXct(sensor_concentrations$Group.1, format = "%Y-%m-%d %H:%M:%S")
+  sensor_concentrations$timestamp <- as.POSIXct(
+    sensor_concentrations$Group.1, format = "%Y-%m-%d %H:%M:%S"
+  )
 
   sensor_data <- data.frame(
     x = rep(sensor_coords[1], nrow(sensor_concentrations)),
@@ -433,7 +409,7 @@ single_emission_rate_plot <- function(sim_dt, puff_dt, output_dt, start_time, en
 
   sensor_data$time_label <- format(sensor_data$timestamp, "%H:%M")
 
-  ggplot(sensor_data, aes(x = timestamp, y = y, fill = concentration)) +
+  plot <- ggplot(sensor_data, aes(x = timestamp, y = y, fill = concentration)) +
     geom_tile() +
     scale_fill_gradientn(colors = c("blue", "red", "yellow"), name = "Concentration") +
     labs(
@@ -447,24 +423,34 @@ single_emission_rate_plot <- function(sim_dt, puff_dt, output_dt, start_time, en
       axis.ticks.y = element_blank(),
       panel.grid = element_blank()
     )
+
+  return(plot)
 }
+
 
 #' Plot Time Series of Sensor Concentrations
 #'
 #' This function plots the time series of sensor concentrations.
 #'
-#' @param sensor_concentrations Data frame. Output of the simulate_sensor_mode function with sensor data.
+#' @param sensor_concentrations A data frame (or matrix) containing the output from
+#'   the sensor simulation function (e.g., `simulate_sensor_mode()`). It must include:
+#'   \describe{
+#'     \item{Group.1}{A character vector of timestamps in the format `"YYYY-MM-DD HH:MM:SS"`.}
+#'     \item{Sensor_1}{A numeric vector of sensor concentration values corresponding to each timestamp.}
+#'   }
 #'
 #' @return A ggplot object showing the time series of sensor concentrations.
+#'
 #' @export
+#'
 #' @examples
 #' \dontrun{
-#' plot <- time_series_plot(sensor_concentrations)
-#' print(plot)
+#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
+#' time_series_plot(sensor_concentrations)
 #' }
 time_series_plot <- function(sensor_concentrations) {
   sensor_long <- sensor_concentrations |>
-    mutate(time2 = seq(0, nrow(sensor_concentrations)-1)) |>
+    mutate(time2 = seq(0, nrow(sensor_concentrations) - 1)) |>
     pivot_longer(
       cols = starts_with("Sensor"),
       names_to = "Sensor",
@@ -486,58 +472,65 @@ time_series_plot <- function(sensor_concentrations) {
     theme_bw()
 }
 
-
 #' Faceted Time Series Plot of Methane Concentrations and Wind Data
 #'
-#' This function creates a faceted plot showing methane concentrations and wind data over time.
+#' This function creates a faceted plot showing methane concentrations along with wind data over time.
 #'
-#' @param sensor_concentrations Data frame. Output of the simulate_sensor_mode function with sensor data.
-#' @param wind_data List. Wind data containing "wind_u" and "wind_v" components.
-#' @param time_sequence POSIXct vector. Time steps corresponding to the wind data.
+#' @param sensor_concentrations Data frame. Output from a sensor simulation function,
+#'   which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
+#'   for the sensor concentration values.
+#'   }
+#' @param wind_data A list containing wind data with components u and v
+#'   }
+#' @param time_sequence A POSIXct vector of time steps corresponding to the wind data.
 #'
-#' @return A ggplot object with faceted time series plots.
+#' @return A ggplot object with faceted time series plots of methane concentrations and wind data.
+#'
 #' @export
+#'
 #' @examples
 #' \dontrun{
-#' time_sequence <- seq(
-#'   as.POSIXct("2025-01-01 00:00:00"),
-#'   as.POSIXct("2025-01-01 01:00:00"),
-#'   by = "min"
+#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
+#'
+#' wind_data <- list(
+#'   wind_u = runif(length(time_sequence), min = -5, max = 5),
+#'   wind_v = runif(length(time_sequence), min = -5, max = 5)
 #' )
-#' plot <- faceted_time_series_plot(sensor_concentrations, wind_data, time_sequence)
-#' print(plot)
+#'
+#' faceted_time_series_plot(sensor_concentrations, wind_data, time_sequence)
 #' }
 faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequence) {
-  # Rename columns for clarity
   sensor_concentrations <- sensor_concentrations %>%
     rename(
       time = Group.1,
       concentration = Sensor_1
     )
 
-  # Subset wind data to match time steps
-  wind_u_subset <- wind_data$wind_u[seq(1, length(time_sequence))]
-  wind_v_subset <- wind_data$wind_v[seq(1, length(time_sequence))]
+  # Subset wind data to match the length of time_sequence
+  wind_u_subset <- wind_data$wind_u[seq_len(length(time_sequence))]
+  wind_v_subset <- wind_data$wind_v[seq_len(length(time_sequence))]
 
-  # Combine wind data with concentrations
+  # Combine wind data with sensor concentrations
   sensor_concentrations <- sensor_concentrations %>%
-    mutate(wind_u = wind_u_subset[1:nrow(sensor_concentrations)],
-           wind_v = wind_v_subset[1:nrow(sensor_concentrations)])
+    mutate(
+      wind_u = wind_u_subset[seq_len(nrow(sensor_concentrations))],
+      wind_v = wind_v_subset[seq_len(nrow(sensor_concentrations))]
+    )
 
-  # Transform data for plotting
+  # Pivot data into long format for plotting
   sensor_concentrations_long <- sensor_concentrations %>%
     pivot_longer(
-      cols = c(concentration, wind_u, wind_v),  # Include concentration and wind data
+      cols = c(concentration, wind_u, wind_v),
       names_to = "variable",
       values_to = "value"
     )
+
   facet_labels <- c(
     concentration = "Methane Concentration (kg/m³)",
     wind_u = "Wind Component U (m/s)",
     wind_v = "Wind Component V (m/s)"
   )
 
-  # Create a faceted plot with labels
   ggplot(sensor_concentrations_long, aes(x = time, y = value, color = variable, group = variable)) +
     geom_line() +
     geom_point() +
@@ -551,49 +544,51 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
     theme(legend.position = "none")
 }
 
-
 #' Create a Site Map of Sensors and Sources
 #'
-#' This function generates a site map of sensor and source locations.
+#' This function generates a site map showing the locations of sensors and sources.
 #'
-#' @param sensors Data frame. Contains columns "x" and "y" for sensor coordinates.
-#' @param sources Data frame. Contains columns "x" and "y" for source coordinates.
+#' @param sensors A data frame containing sensor locations. It must include:
+#'   \describe{
+#'     \item{x}{A numeric vector of sensor x-coordinates.}
+#'     \item{y}{A numeric vector of sensor y-coordinates.}
+#'   }
+#' @param sources A data frame containing source locations. It must include:
+#'   \describe{
+#'     \item{x}{A numeric vector of source x-coordinates.}
+#'     \item{y}{A numeric vector of source y-coordinates.}
+#'   }
 #'
-#' @return A ggplot object showing the site map of sensors and sources.
+#' @return A ggplot object showing a site map of sensors and sources.
+#'
 #' @export
+#'
 #' @examples
 #' \dontrun{
-#' # Define sensor and source locations
 #' sensors <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
 #' sources <- data.frame(x = c(7, 8), y = c(9, 10))
 #'
-#' # Generate the site map
-#' plot <- create_site_map(sensors, sources)
-#' print(plot)
+#' create_site_map(sensors, sources)
 #' }
 create_site_map <- function(sensors, sources) {
-  # Combine sensors and sources into one data frame
+  # Add a type column for sensors and sources
   sensors$type <- "Sensor"
   sources$type <- "Source"
-  combined <- rbind(
-    sensors,
-    sources
-  )
+
+  # Combine sensors and sources into one data frame
+  combined <- rbind(sensors, sources)
 
   ggplot(combined, aes(x = x, y = y, shape = type, color = type)) +
-    # Plot points with different shapes and colors based on the 'type'
     geom_point(size = 4, stroke = 1.5) +
     scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
     scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
-    # Add labels and theme
     labs(
       title = "Site Map of Locations",
       x = "Longitude",
       y = "Latitude",
-      shape = "Location Type",  # Legend title for shapes
-      color = "Location Type"   # Legend title for colors
+      shape = "Location Type",
+      color = "Location Type"
     ) +
     theme_minimal() +
     theme(legend.position = "bottom")
 }
-
