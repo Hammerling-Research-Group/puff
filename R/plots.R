@@ -409,19 +409,19 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
   sensor_data$time_label <- format(sensor_data$timestamp, "%H:%M")
 
-  plot <- ggplot(sensor_data, aes(x = timestamp, y = y, fill = concentration)) +
-    geom_tile() +
-    scale_fill_gradientn(colors = c("blue", "red", "yellow"), name = "Concentration") +
-    labs(
+  plot <- ggplot2::ggplot(sensor_data, ggplot2::aes(x = timestamp, y = y, fill = concentration)) +
+    ggplot2::geom_tile() +
+    ggplot2::scale_fill_gradientn(colors = c("blue", "red", "yellow"), name = "Concentration") +
+    ggplot2::labs(
       title = "Sensor Concentrations Over Time",
       x = "Time (Hour:Minute)",
       y = NULL
     ) +
-    theme_minimal() +
-    theme(
-      axis.text.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      panel.grid = element_blank()
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      panel.grid = ggplot2::element_blank()
     )
 
   return(plot)
@@ -450,26 +450,26 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 #' }
 time_series_plot <- function(sensor_concentrations) {
   sensor_long <- sensor_concentrations |>
-    mutate(time2 = seq(0, nrow(sensor_concentrations) - 1)) |>
-    pivot_longer(
-      cols = starts_with("Sensor"),
+    dplyr::mutate(time2 = seq(0, nrow(sensor_concentrations) - 1)) |>
+    tidyr::pivot_longer(
+      cols = dplyr::starts_with("Sensor"),
       names_to = "Sensor",
       values_to = "Concentration"
     ) |>
-    rename(time = Group.1)
+    dplyr::rename(time = Group.1)
 
   sensor_long |>
-    mutate(Sensor = str_replace(Sensor, "Sensor_1", "Test Sensor")) |>
-    ggplot(aes(x = time2, y = Concentration, group = Sensor)) +
-    geom_line() +
-    facet_wrap(~ Sensor) +
-    labs(
+    dplyr::mutate(Sensor = stringr::str_replace(Sensor, "Sensor_1", "Test Sensor")) |>
+    ggplot2::ggplot(ggplot2::aes(x = time2, y = Concentration, group = Sensor)) +
+    ggplot2::geom_line() +
+    ggplot2::facet_wrap(~ Sensor) +
+    ggplot2::labs(
       title = "Sensor Concentrations Over Time",
       subtitle = "With Time Steps",
       x = "Time from emission start (min)",
       y = "Concentration"
     ) +
-    theme_bw()
+    ggplot2::theme_bw()
 }
 
 #' Faceted Time Series Plot of Methane Concentrations and Wind Data
@@ -501,7 +501,7 @@ time_series_plot <- function(sensor_concentrations) {
 #' }
 faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequence) {
   sensor_concentrations <- sensor_concentrations %>%
-    rename(
+    dplyr::rename(
       time = Group.1,
       concentration = Sensor_1
     )
@@ -512,14 +512,14 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
 
   # Combine wind data with sensor concentrations
   sensor_concentrations <- sensor_concentrations %>%
-    mutate(
+    dplyr::mutate(
       wind_u = wind_u_subset[seq_len(nrow(sensor_concentrations))],
       wind_v = wind_v_subset[seq_len(nrow(sensor_concentrations))]
     )
 
   # Pivot data into long format for plotting
   sensor_concentrations_long <- sensor_concentrations %>%
-    pivot_longer(
+    tidyr::pivot_longer(
       cols = c(concentration, wind_u, wind_v),
       names_to = "variable",
       values_to = "value"
@@ -531,17 +531,17 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
     wind_v = "Wind Component V (m/s)"
   )
 
-  ggplot(sensor_concentrations_long, aes(x = time, y = value, color = variable, group = variable)) +
-    geom_line() +
-    geom_point() +
-    facet_wrap(~ variable, scales = "free_y", ncol = 1, labeller = labeller(variable = facet_labels)) +
-    labs(
+  ggplot2::ggplot(sensor_concentrations_long, ggplot2::aes(x = time, y = value, color = variable, group = variable)) +
+    ggplot2::geom_line() +
+    ggplot2::geom_point() +
+    ggplot2::facet_wrap(~ variable, scales = "free_y", ncol = 1, labeller = ggplot2::labeller(variable = facet_labels)) +
+    ggplot2::labs(
       title = "Time Series of Methane Concentration and Wind Data",
       x = "Time",
       y = "Value"
     ) +
-    theme_minimal() +
-    theme(legend.position = "none")
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "none")
 }
 
 #' Create a Site Map of Sensors and Sources
@@ -571,24 +571,34 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
 #' create_site_map(sensors, sources)
 #' }
 create_site_map <- function(sensors, sources) {
-  # Add a type column for sensors and sources
+if(!is.data.frame(sensors)) {
+  sensors <- t(data.frame(sensors[,1:2]))
+}else {
+ sensors <- sensors[,1:2]
+}
+  if(!is.data.frame(sources)) {
+    sources <- t(data.frame(sources[,1:2]))
+  }else{
+    sources <- sources[,1:2]
+  }
+   # Add a type column for sensors and sources
   sensors$type <- "Sensor"
   sources$type <- "Source"
 
   # Combine sensors and sources into one data frame
   combined <- rbind(sensors, sources)
 
-  ggplot(combined, aes(x = x, y = y, shape = type, color = type)) +
-    geom_point(size = 4, stroke = 1.5) +
-    scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
-    scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
-    labs(
+  ggplot2::ggplot(combined, ggplot2::aes(x = x, y = y, shape = type, color = type)) +
+    ggplot2::geom_point(size = 4, stroke = 1.5) +
+    ggplot2::scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
+    ggplot2::scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
+    ggplot2::labs(
       title = "Site Map of Locations",
       x = "Longitude",
       y = "Latitude",
       shape = "Location Type",
       color = "Location Type"
     ) +
-    theme_minimal() +
-    theme(legend.position = "bottom")
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "bottom")
 }
