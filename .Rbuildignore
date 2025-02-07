@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^.*\.md$
 ^.*\.ini$
+^.*\.github$

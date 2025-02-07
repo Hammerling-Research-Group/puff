@@ -396,6 +396,10 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #' }
 single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("The 'ggplot2' package is required but not installed.")
+  }
+
   sensor_concentrations$timestamp <- as.POSIXct(
     sensor_concentrations$Group.1, format = "%Y-%m-%d %H:%M:%S"
   )
@@ -449,6 +453,19 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 #' time_series_plot(sensor_concentrations)
 #' }
 time_series_plot <- function(sensor_concentrations) {
+
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("The 'dplyr' package is required but not installed.")
+  }
+
+  if (!requireNamespace("tidyr", quietly = TRUE)) {
+    stop("The 'tidyr' package is required but not installed.")
+  }
+
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("The 'ggplot2' package is required but not installed.")
+  }
+
   sensor_long <- sensor_concentrations |>
     dplyr::mutate(time2 = seq(0, nrow(sensor_concentrations) - 1)) |>
     tidyr::pivot_longer(
@@ -479,9 +496,7 @@ time_series_plot <- function(sensor_concentrations) {
 #' @param sensor_concentrations Data frame. Output from a sensor simulation function,
 #'   which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
 #'   for the sensor concentration values.
-#'   }
 #' @param wind_data A list containing wind data with components u and v
-#'   }
 #' @param time_sequence A POSIXct vector of time steps corresponding to the wind data.
 #'
 #' @return A ggplot object with faceted time series plots of methane concentrations and wind data.
@@ -500,6 +515,23 @@ time_series_plot <- function(sensor_concentrations) {
 #' faceted_time_series_plot(sensor_concentrations, wind_data, time_sequence)
 #' }
 faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequence) {
+
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("The 'dplyr' package is required but not installed.")
+  }
+
+  if (!requireNamespace("tidyr", quietly = TRUE)) {
+    stop("The 'tidyr' package is required but not installed.")
+  }
+
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("The 'ggplot2' package is required but not installed.")
+  }
+
+  if (!requireNamespace("magrittr", quietly = TRUE)) {
+    stop("The 'magrittr' package is required but not installed.")
+  }
+
   sensor_concentrations <- sensor_concentrations %>%
     dplyr::rename(
       time = Group.1,
@@ -571,21 +603,26 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
 #' create_site_map(sensors, sources)
 #' }
 create_site_map <- function(sensors, sources) {
-if(!is.data.frame(sensors)) {
-  sensors <- t(data.frame(sensors[,1:2]))
-}else {
- sensors <- sensors[,1:2]
-}
+
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("The 'ggplot2' package is required but not installed.")
+  }
+
+  if(!is.data.frame(sensors)) {
+    sensors <- t(data.frame(sensors[,1:2]))
+    } else {
+      sensors <- sensors[,1:2]
+      }
+
   if(!is.data.frame(sources)) {
     sources <- t(data.frame(sources[,1:2]))
-  }else{
-    sources <- sources[,1:2]
-  }
-   # Add a type column for sensors and sources
+    } else {
+      sources <- sources[,1:2]
+      }
+
   sensors$type <- "Sensor"
   sources$type <- "Source"
 
-  # Combine sensors and sources into one data frame
   combined <- rbind(sensors, sources)
 
   ggplot2::ggplot(combined, ggplot2::aes(x = x, y = y, shape = type, color = type)) +

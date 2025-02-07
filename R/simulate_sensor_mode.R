@@ -153,7 +153,7 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
   # aggregate concentrations to fit with output_dt resolution
   c <- aggregate(concentrations, by = list(cut(sim_timestamps,
                                                breaks = output_timestamps)),
-                 mean) # TODO: can update how we think about this (e.g., mean, median, etc.; could be arg)
+                 mean)
   rownames(c) <- NULL
 
   return(c)
