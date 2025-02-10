@@ -497,7 +497,9 @@ time_series_plot <- function(sensor_concentrations) {
 #'   which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
 #'   for the sensor concentration values.
 #' @param wind_data A list containing wind data with components u and v
-#' @param time_sequence A POSIXct vector of time steps corresponding to the wind data.
+#' @param output_dt Integer. Desired time resolution (in seconds) for the final output of concentrations.
+#' @param start_time POSIXct. Start time of the simulation.
+#' @param end_time POSIXct. End time of the simulation.
 #'
 #' @return A ggplot object with faceted time series plots of methane concentrations and wind data.
 #'
@@ -506,15 +508,17 @@ time_series_plot <- function(sensor_concentrations) {
 #' @examples
 #' \dontrun{
 #' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
+#'output_dt <- 60
+#'start_time <- as.POSIXct("2024-01-01 12:00:00")
+#'end_time <- as.POSIXct("2024-01-01 13:00:00")
+#'wind_data <- list(
+#'   wind_u = runif(3601, min = -3, max = 0.7),
+#'   wind_v = runif(3601, min = -3, max = 1.5)
+#'   )
 #'
-#' wind_data <- list(
-#'   wind_u = runif(length(time_sequence), min = -5, max = 5),
-#'   wind_v = runif(length(time_sequence), min = -5, max = 5)
-#' )
-#'
-#' faceted_time_series_plot(sensor_concentrations, wind_data, time_sequence)
+#' faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
 #' }
-faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequence) {
+faceted_time_series_plot <- function(sensor_concentrations, wind_data, start_time, end_time, output_dt) {
 
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     stop("The 'dplyr' package is required but not installed.")
@@ -531,65 +535,170 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, time_sequ
   if (!requireNamespace("magrittr", quietly = TRUE)) {
     stop("The 'magrittr' package is required but not installed.")
   }
+  # Validate sensor_concentrations:
+  # Must be a data frame with a "Group.1" column (timestamps) and at least one sensor column.
+  if (!is.data.frame(sensor_concentrations)) {
+    stop("sensor_concentrations must be a data frame.")
+  }
+  if (!("Group.1" %in% names(sensor_concentrations))) {
+    stop("sensor_concentrations must have a column named 'Group.1' for timestamps.")
+  }
+  if (ncol(sensor_concentrations) < 2) {
+    stop("sensor_concentrations must have at least one sensor concentration column in addition to 'Group.1'.")
+  }
 
-  sensor_concentrations <- sensor_concentrations %>%
-    dplyr::rename(
-      time = Group.1,
-      concentration = Sensor_1
-    )
+  # Convert the timestamp column to POSIXct if necessary.
+  if (!inherits(sensor_concentrations$Group.1, "POSIXct")) {
+    sensor_concentrations$Group.1 <- as.POSIXct(sensor_concentrations$Group.1)
+    if (any(is.na(sensor_concentrations$Group.1))) {
+      stop("Conversion of sensor_concentrations$Group.1 to POSIXct resulted in NA values.")
+    }
+  }
 
-  # Subset wind data to match the length of time_sequence
-  wind_u_subset <- wind_data$wind_u[seq_len(length(time_sequence))]
-  wind_v_subset <- wind_data$wind_v[seq_len(length(time_sequence))]
+  # Validate start_time and end_time
+  if (!inherits(start_time, "POSIXct")) {
+    stop("start_time must be a POSIXct object.")
+  }
+  if (!inherits(end_time, "POSIXct")) {
+    stop("end_time must be a POSIXct object.")
+  }
+  if (start_time >= end_time) {
+    stop("start_time must be before end_time.")
+  }
 
-  # Combine wind data with sensor concentrations
-  sensor_concentrations <- sensor_concentrations %>%
-    dplyr::mutate(
-      wind_u = wind_u_subset[seq_len(nrow(sensor_concentrations))],
-      wind_v = wind_v_subset[seq_len(nrow(sensor_concentrations))]
-    )
+  # Validate output_dt
+  if (!is.numeric(output_dt) || length(output_dt) != 1 || output_dt <= 0) {
+    stop("output_dt must be a single positive numeric value (in seconds).")
+  }
 
-  # Pivot data into long format for plotting
-  sensor_concentrations_long <- sensor_concentrations %>%
+  # Validate wind_data
+  if (!is.list(wind_data)) {
+    stop("wind_data must be a list containing wind components.")
+  }
+  if (length(wind_data) < 2) {
+    stop("wind_data must contain at least two elements (for u and v components).")
+  }
+
+  # Determine wind u and v components whether or not they are named.
+  if (is.null(names(wind_data)) || all(names(wind_data) == "")) {
+    # Unnamed list; assume first element is u and second is v.
+    wind_u <- wind_data[[1]]
+    wind_v <- wind_data[[2]]
+  } else {
+    if (!("wind_u" %in% names(wind_data)) || !("wind_v" %in% names(wind_data))) {
+      # If names are provided but not the expected ones, use first two elements and issue a warning.
+      wind_u <- wind_data[[1]]
+      wind_v <- wind_data[[2]]
+      warning("wind_data does not have named components 'wind_u' and 'wind_v'. Assuming the first two elements are the wind components.")
+    } else {
+      wind_u <- wind_data$wind_u
+      wind_v <- wind_data$wind_v
+    }
+  }
+
+  # Validate that wind_u and wind_v are numeric
+  if (!is.numeric(wind_u) || !is.numeric(wind_v)) {
+    stop("The wind components must be numeric vectors.")
+  }
+
+  # Create a time sequence from start_time to end_time using output_dt
+  time_sequence <- seq(from = start_time, to = end_time, by = output_dt)
+
+  # Subset wind data to match the length of the time sequence
+  wind_u_subset <- wind_u[seq_len(length(time_sequence))]
+  wind_v_subset <- wind_v[seq_len(length(time_sequence))]
+
+  ## Process sensor_concentrations:
+  ## First, rename "Group.1" to "time" in a new data frame.
+  sensor_df <- sensor_concentrations %>% dplyr::rename(time = Group.1)
+  # Explicitly select all sensor columns (all columns except "time")
+  sensor_cols <- setdiff(names(sensor_df), "time")
+  if (length(sensor_cols) < 1) {
+    stop("No sensor concentration columns found after renaming.")
+  }
+  sensor_long <- sensor_df %>%
     tidyr::pivot_longer(
-      cols = c(concentration, wind_u, wind_v),
-      names_to = "variable",
+      cols = sensor_cols,
+      names_to = "sensor",
       values_to = "value"
-    )
+    ) %>%
+    dplyr::mutate(variable = "concentration",
+                  plot_color = sensor)
 
+  ## Process wind data:
+  wind_df <- data.frame(
+    time = sensor_concentrations$Group.1,
+    wind_u = wind_u_subset[seq_len(nrow(sensor_concentrations))],
+    wind_v = wind_v_subset[seq_len(nrow(sensor_concentrations))]
+  )
+  wind_long <- wind_df %>%
+    tidyr::pivot_longer(
+      cols = c(wind_u, wind_v),
+      names_to = "sensor",
+      values_to = "value"
+    ) %>%
+    dplyr::mutate(variable = sensor,  # will be "wind_u" or "wind_v"
+                  plot_color = sensor)
+
+  ## Combine sensor and wind data
+  combined_long <- dplyr::bind_rows(sensor_long, wind_long)
+
+  # Explicitly ensure that the faceting variable "variable" is present
+  # and convert it to a factor with the expected levels.
+  combined_long$variable <- factor(combined_long$variable,
+                                   levels = c("concentration", "wind_u", "wind_v"))
+
+  ## Define facet labels for the panels
   facet_labels <- c(
     concentration = "Methane Concentration (kg/m³)",
     wind_u = "Wind Component U (m/s)",
     wind_v = "Wind Component V (m/s)"
   )
 
-  ggplot2::ggplot(sensor_concentrations_long, ggplot2::aes(x = time, y = value, color = variable, group = variable)) +
+  ## Dynamically determine an appropriate x-axis date break interval to avoid label overload
+  total_duration <- as.numeric(difftime(end_time, start_time, units = "secs"))
+  n_breaks <- 5 # aim for around 10 labels
+  break_interval <- total_duration / n_breaks
+  if (break_interval < 60) {
+    date_break_str <- paste(round(break_interval), "sec")
+  } else if (break_interval < 3600) {
+    date_break_str <- paste(round(break_interval / 60), "min")
+  } else {
+    date_break_str <- paste(round(break_interval / 3600), "hour")
+  }
+
+  ## Create the faceted time series plot
+  p <- ggplot2::ggplot(combined_long,
+                       ggplot2::aes(x = time, y = value, color = plot_color, group = sensor)) +
     ggplot2::geom_line() +
     ggplot2::geom_point() +
-    ggplot2::facet_wrap(~ variable, scales = "free_y", ncol = 1, labeller = ggplot2::labeller(variable = facet_labels)) +
+    ggplot2::facet_wrap(~ variable, scales = "free_y", ncol = 1,
+                        labeller = ggplot2::labeller(variable = facet_labels)) +
     ggplot2::labs(
       title = "Time Series of Methane Concentration and Wind Data",
       x = "Time",
       y = "Value"
     ) +
+    ggplot2::scale_x_datetime(date_breaks = date_break_str, date_labels = "%H:%M:%S") +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none")
+
+  return(p)
 }
 
 #' Create a Site Map of Sensors and Sources
 #'
 #' This function generates a site map showing the locations of sensors and sources.
+#' It accepts inputs as either data frames or matrices. In the event that extra
+#' columns (e.g., z coordinates) are present, only the first two columns (or the
+#' columns named "x" and "y" if available) will be used.
 #'
-#' @param sensors A data frame containing sensor locations. It must include:
-#'   \describe{
-#'     \item{x}{A numeric vector of sensor x-coordinates.}
-#'     \item{y}{A numeric vector of sensor y-coordinates.}
-#'   }
-#' @param sources A data frame containing source locations. It must include:
-#'   \describe{
-#'     \item{x}{A numeric vector of source x-coordinates.}
-#'     \item{y}{A numeric vector of source y-coordinates.}
-#'   }
+#' @param sensors A data frame or matrix containing sensor locations. It must include:
+#'   - Either columns named \code{x} and \code{y}, or at least two columns where
+#'     the first two are taken as \code{x} and \code{y} coordinates.
+#' @param sources A data frame or matrix containing source locations. It must include:
+#'   - Either columns named \code{x} and \code{y}, or at least two columns where
+#'     the first two are taken as \code{x} and \code{y} coordinates.
 #'
 #' @return A ggplot object showing a site map of sensors and sources.
 #'
@@ -608,17 +717,32 @@ create_site_map <- function(sensors, sources) {
     stop("The 'ggplot2' package is required but not installed.")
   }
 
-  if(!is.data.frame(sensors)) {
-    sensors <- t(data.frame(sensors[,1:2]))
-    } else {
-      sensors <- sensors[,1:2]
-      }
+  # Helper function to process the coordinate input
+  process_coords <- function(coords, label) {
+    # Accept matrices by converting them to data frames.
+    if (is.matrix(coords)) {
+      coords <- as.data.frame(coords)
+    } else if (!is.data.frame(coords)) {
+      stop(sprintf("'%s' must be a data frame or matrix.", label))
+    }
 
-  if(!is.data.frame(sources)) {
-    sources <- t(data.frame(sources[,1:2]))
+    # If columns "x" and "y" exist, extract them.
+    if (all(c("x", "y") %in% names(coords))) {
+      coords <- coords[, c("x", "y"), drop = FALSE]
     } else {
-      sources <- sources[,1:2]
+      # If not, ensure there are at least two columns and use the first two.
+      if (ncol(coords) < 2) {
+        stop(sprintf("'%s' must have at least two columns representing x and y coordinates.", label))
       }
+      coords <- coords[, 1:2, drop = FALSE]
+      names(coords)[1:2] <- c("x", "y")
+    }
+    return(coords)
+  }
+
+  # Process both sensors and sources
+  sensors <- process_coords(sensors, "sensors")
+  sources <- process_coords(sources, "sources")
 
   sensors$type <- "Sensor"
   sources$type <- "Source"
