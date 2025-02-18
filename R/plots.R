@@ -396,6 +396,42 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #' }
 single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
+  # sensor_concentrations must fit the data from simulate_sensor_mode
+  if (!is.data.frame(sensor_concentrations)) {
+    stop("sensor_concentrations must be a data frame.")
+  }
+  if (nrow(sensor_concentrations) == 0) {
+    stop("sensor_concentrations is empty. Please provide data from simulate_sensor_mode.")
+  }
+  if (!"Group.1" %in% names(sensor_concentrations)) {
+    stop("sensor_concentrations must contain a column named 'Group.1' with POSIX time values.")
+  }
+  sensor_cols <- grep("^Sensor_\\d+$", names(sensor_concentrations), value = TRUE)
+  if (length(sensor_cols) == 0) {
+    stop("sensor_concentrations must contain at least one sensor concentration column (e.g., 'Sensor_1').")
+  }
+  # sensor_coords must be either a numeric vector of length 3 or a matrix/data.frame with 3 columns.
+  if (is.matrix(sensor_coords) || is.data.frame(sensor_coords)) {
+    sensor_coords <- as.matrix(sensor_coords)
+    if (ncol(sensor_coords) != 3) {
+      stop("sensor_coords must have exactly 3 columns (x, y, z).")
+    }
+    # If multiple sensors are provided, check that the number of rows equals the number of sensor columns.
+    if (nrow(sensor_coords) > 1) {
+      if (length(sensor_cols) != nrow(sensor_coords)) {
+        stop("The number of sensor concentration columns in sensor_concentrations (",
+             length(sensor_cols),
+             ") does not match the number of sensor coordinate rows provided (",
+             nrow(sensor_coords), ").")
+      }
+    }
+  } else if (is.vector(sensor_coords)) {
+    if (length(sensor_coords) != 3) {
+      stop("sensor_coords must be a numeric vector of length 3 if only one sensor is provided.")
+    }
+  } else {
+    stop("sensor_coords must be either a numeric vector of length 3 or a matrix/data.frame with 3 columns.")
+  }
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("The 'ggplot2' package is required but not installed.")
   }
@@ -453,7 +489,26 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 #' time_series_plot(sensor_concentrations)
 #' }
 time_series_plot <- function(sensor_concentrations) {
-
+  #sensor_concentrations must fit data from simulate_sensor_mode
+  if (!is.data.frame(sensor_concentrations) && !is.matrix(sensor_concentrations)) {
+    stop("sensor_concentrations must be a data.frame or matrix.")
+  }
+  sensor_concentrations <- as.data.frame(sensor_concentrations)
+  if (nrow(sensor_concentrations) == 0) {
+    stop("sensor_concentrations is empty. Please provide data from simulate_sensor_mode.")
+  }
+  if (!"Group.1" %in% names(sensor_concentrations)) {
+    stop("sensor_concentrations must contain a column named 'Group.1' with POSIX time values.")
+  }
+  sensor_cols <- grep("^Sensor_\\d+$", names(sensor_concentrations), value = TRUE)
+  if (length(sensor_cols) == 0) {
+    stop("sensor_concentrations must contain at least one sensor concentration column (e.g., 'Sensor_1').")
+  }
+  for (col in sensor_cols) {
+    if (!is.numeric(sensor_concentrations[[col]])) {
+      stop("Sensor concentration column '", col, "' must be numeric.")
+    }
+  }
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     stop("The 'dplyr' package is required but not installed.")
   }
