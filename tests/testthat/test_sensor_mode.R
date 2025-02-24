@@ -39,6 +39,29 @@ test_that("simulate_sensor_mode returns a data frame", {
   expect_s3_class(result, "data.frame")
 })
 
+test_that("simulate_sensor_mode errors when wind_data is not a data frame", {
+  bad_wind_data <- list(
+    runif(61, min = -3, max = 0.7),
+    runif(61, min = -3, max = 1.5)
+  )
+
+  expect_error(
+    simulate_sensor_mode(
+      sim_dt = sim_dt,
+      puff_dt = puff_dt,
+      output_dt = output_dt,
+      start_time = start_time,
+      end_time = end_time,
+      source_coords = source_coords,
+      emission_rate = emission_rate,
+      wind_data = bad_wind_data,
+      sensor_coords = sensor_coords,
+      puff_duration = 1200
+    ),
+    "`wind_data` must be a data frame or tibble. Supplied input is of type list"
+  )
+})
+
 test_that("Concentration values are reasonable given emission rate and distance", {
   max_concentration <- max(as.matrix(result[,-1]))
   expect_true(max_concentration <= 10)

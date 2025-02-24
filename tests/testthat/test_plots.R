@@ -5,15 +5,21 @@ devtools::load_all()
 sim_dt <- 10
 puff_dt <- 10
 output_dt <- 60
-start_time <- "2024-01-01 12:00:00"
-end_time <- "2024-01-01 13:00:00"
+start_time <- as.POSIXct("2024-01-01 12:00:00")
+end_time   <- as.POSIXct("2024-01-01 12:10:00")
 source_coords <- c(0, 0, 2.5)
-sensor_coords <- matrix(c(100, 0, 0), ncol = 3, byrow = TRUE)
 emission_rate <- 3.5
-wind_data <- list(
-  runif(61, min = -3, max = 0.7),
-  runif(61, min = -3, max = 1.5)
+
+sim_times <- seq(from = start_time, to = end_time, by = sim_dt)
+n_steps   <- length(sim_times)
+times_sec <- as.numeric(difftime(sim_times, sim_times[1], units = "secs"))
+
+wind_data <- data.frame(
+  wind_u = 2 + 0.5 * sin(2 * pi * times_sec / max(times_sec)),
+  wind_v = 1 + 0.5 * cos(2 * pi * times_sec / max(times_sec))
 )
+
+sensor_coords <- matrix(c(100, 0, 0), ncol = 3, byrow = TRUE)
 
 sensor_concentrations <- simulate_sensor_mode(
   sim_dt        = sim_dt,
@@ -27,8 +33,6 @@ sensor_concentrations <- simulate_sensor_mode(
   sensor_coords = sensor_coords,  # sensor location (only one sensor in this case)
   puff_duration = 1200          # duration (in sec) that each puff remains active
 )
-
-## >> TEAGAN TO POPULATE <<
 
 ## Tests for single_emission_rate_plot ##
 
@@ -181,7 +185,7 @@ test_that("faceted_time_series_plot errors when 'Group.1' column is missing", {
 
 test_that("faceted_time_series_plot errors when conversion of Group.1 fails", {
   bad_data <- sensor_concentrations
-  bad_data$Group.1 <- "invalid time"
+  bad_data$Group.1 <- as.character(NA)
   wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
   start_posix <- as.POSIXct("2024-01-01 12:00:00")
   end_posix <- as.POSIXct("2024-01-01 12:09:00")
@@ -291,3 +295,4 @@ test_that("create_site_map errors when sources has fewer than two columns", {
     "must have at least two columns"
   )
 })
+

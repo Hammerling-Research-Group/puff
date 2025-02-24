@@ -59,6 +59,10 @@ simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
                                  wind_data, sensor_coords,
                                  puff_duration = 1200) {
 
+  if (!is.data.frame(wind_data)) {
+    stop("`wind_data` must be a data frame or tibble. Supplied input is of type ", class(wind_data))
+  }
+
   # set things up for sim + output
   sim_timestamps <- seq(from = as.POSIXct(start_time),
                         to = as.POSIXct(end_time),

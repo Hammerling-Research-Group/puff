@@ -4,7 +4,13 @@
 \alias{faceted_time_series_plot}
 \title{Faceted Time Series Plot of Methane Concentrations and Wind Data}
 \usage{
-faceted_time_series_plot(sensor_concentrations, wind_data, time_sequence)
+faceted_time_series_plot(
+  sensor_concentrations,
+  wind_data,
+  start_time,
+  end_time,
+  output_dt
+)
 }
 \arguments{
 \item{sensor_concentrations}{Data frame. Output from a sensor simulation function,
@@ -13,7 +19,11 @@ for the sensor concentration values.}
 
 \item{wind_data}{A list containing wind data with components u and v}
 
-\item{time_sequence}{A POSIXct vector of time steps corresponding to the wind data.}
+\item{start_time}{POSIXct. Start time of the simulation.}
+
+\item{end_time}{POSIXct. End time of the simulation.}
+
+\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
 }
 \value{
 A ggplot object with faceted time series plots of methane concentrations and wind data.
@@ -24,12 +34,14 @@ This function creates a faceted plot showing methane concentrations along with w
 \examples{
 \dontrun{
 # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
-
+output_dt <- 60
+start_time <- as.POSIXct("2024-01-01 12:00:00")
+end_time <- as.POSIXct("2024-01-01 13:00:00")
 wind_data <- list(
-  wind_u = runif(length(time_sequence), min = -5, max = 5),
-  wind_v = runif(length(time_sequence), min = -5, max = 5)
-)
+  wind_u = runif(3601, min = -3, max = 0.7),
+  wind_v = runif(3601, min = -3, max = 1.5)
+  )
 
-faceted_time_series_plot(sensor_concentrations, wind_data, time_sequence)
+faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
 }
 }

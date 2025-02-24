@@ -7,23 +7,22 @@
 create_site_map(sensors, sources)
 }
 \arguments{
-\item{sensors}{A data frame containing sensor locations. It must include:
-\describe{
-  \item{x}{A numeric vector of sensor x-coordinates.}
-  \item{y}{A numeric vector of sensor y-coordinates.}
-}}
+\item{sensors}{A data frame or matrix containing sensor locations. It must include:
+- Either columns named \code{x} and \code{y}, or at least two columns where
+  the first two are taken as \code{x} and \code{y} coordinates.}
 
-\item{sources}{A data frame containing source locations. It must include:
-\describe{
-  \item{x}{A numeric vector of source x-coordinates.}
-  \item{y}{A numeric vector of source y-coordinates.}
-}}
+\item{sources}{A data frame or matrix containing source locations. It must include:
+- Either columns named \code{x} and \code{y}, or at least two columns where
+  the first two are taken as \code{x} and \code{y} coordinates.}
 }
 \value{
 A ggplot object showing a site map of sensors and sources.
 }
 \description{
 This function generates a site map showing the locations of sensors and sources.
+It accepts inputs as either data frames or matrices. In the event that extra
+columns (e.g., z coordinates) are present, only the first two columns (or the
+columns named "x" and "y" if available) will be used.
 }
 \examples{
 \dontrun{
