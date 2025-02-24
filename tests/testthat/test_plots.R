@@ -2,5 +2,292 @@ library(testthat)
 devtools::load_all()
 
 # setup
+sim_dt <- 10
+puff_dt <- 10
+output_dt <- 60
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+source_coords <- c(0, 0, 2.5)
+sensor_coords <- matrix(c(100, 0, 0), ncol = 3, byrow = TRUE)
+emission_rate <- 3.5
+wind_data <- list(
+  runif(61, min = -3, max = 0.7),
+  runif(61, min = -3, max = 1.5)
+)
+
+sensor_concentrations <- simulate_sensor_mode(
+  sim_dt        = sim_dt,
+  puff_dt       = puff_dt,
+  output_dt     = output_dt,
+  start_time    = start_time,
+  end_time      = end_time,
+  source_coords = source_coords,  # source location
+  emission_rate = emission_rate,
+  wind_data     = wind_data,
+  sensor_coords = sensor_coords,  # sensor location (only one sensor in this case)
+  puff_duration = 1200          # duration (in sec) that each puff remains active
+)
 
 ## >> TEAGAN TO POPULATE <<
+
+## Tests for single_emission_rate_plot ##
+
+test_that("single_emission_rate_plot returns a ggplot object with valid toy data", {
+  p <- single_emission_rate_plot(sensor_concentrations, sensor_coords)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("single_emission_rate_plot errors when sensor_concentrations is not a data frame", {
+  bad_data <- list(a = 1, b = 2)
+  expect_error(
+    single_emission_rate_plot(bad_data, sensor_coords),
+    "sensor_concentrations must be a data frame"
+  )
+})
+
+test_that("single_emission_rate_plot errors when sensor_concentrations is empty", {
+  empty_data <- data.frame(Group.1 = character(), Sensor_1 = numeric())
+  expect_error(
+    single_emission_rate_plot(empty_data, sensor_coords),
+    "sensor_concentrations is empty"
+  )
+})
+
+test_that("single_emission_rate_plot errors when 'Group.1' column is missing", {
+  bad_data <- sensor_concentrations
+  bad_data$Group.1 <- NULL
+  expect_error(
+    single_emission_rate_plot(bad_data, sensor_coords),
+    "must contain a column named 'Group.1'"
+  )
+})
+
+test_that("single_emission_rate_plot errors when no sensor concentration columns exist", {
+  bad_data <- sensor_concentrations
+  bad_data$Sensor_1 <- NULL
+  expect_error(
+    single_emission_rate_plot(bad_data, sensor_coords),
+    "must contain at least one sensor concentration column"
+  )
+})
+
+test_that("single_emission_rate_plot errors with sensor_coords vector of incorrect length", {
+  bad_coords <- c(10, 0)  # Only 2 elements instead of 3
+  expect_error(
+    single_emission_rate_plot(sensor_concentrations, bad_coords),
+    "sensor_coords must be a numeric vector of length 3"
+  )
+})
+
+test_that("single_emission_rate_plot errors with sensor_coords matrix of wrong dimensions", {
+  bad_coords <- matrix(c(10, 0, 0, 5), ncol = 2)
+  expect_error(
+    single_emission_rate_plot(sensor_concentrations, bad_coords),
+    "sensor_coords must have exactly 3 columns"
+  )
+})
+
+test_that("single_emission_rate_plot errors when multiple sensor coordinates do not match sensor columns", {
+  # For a simulation with one sensor, providing two rows should trigger an error.
+  bad_coords <- matrix(c(10, 0, 0, 5, 5, 5), nrow = 2, ncol = 3, byrow = TRUE)
+  expect_error(
+    single_emission_rate_plot(sensor_concentrations, bad_coords),
+    "The number of sensor concentration columns"
+  )
+})
+
+
+## Tests for time_series_plot ##
+
+test_that("time_series_plot returns a ggplot object with valid toy data", {
+  p <- time_series_plot(sensor_concentrations)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("time_series_plot errors when input is not a data.frame or matrix", {
+  bad_data <- list(a = 1)
+  expect_error(
+    time_series_plot(bad_data),
+    "sensor_concentrations must be a data.frame or matrix"
+  )
+})
+
+test_that("time_series_plot errors when sensor_concentrations is empty", {
+  empty_data <- data.frame(Group.1 = character(), Sensor_1 = numeric())
+  expect_error(
+    time_series_plot(empty_data),
+    "sensor_concentrations is empty"
+  )
+})
+
+test_that("time_series_plot errors when 'Group.1' column is missing", {
+  bad_data <- sensor_concentrations
+  bad_data$Group.1 <- NULL
+  expect_error(
+    time_series_plot(bad_data),
+    "must contain a column named 'Group.1'"
+  )
+})
+
+test_that("time_series_plot errors when sensor concentration column is not numeric", {
+  bad_data <- sensor_concentrations
+  bad_data$Sensor_1 <- as.character(bad_data$Sensor_1)
+  expect_error(
+    time_series_plot(bad_data),
+    "Sensor concentration column 'Sensor_1' must be numeric"
+  )
+})
+
+
+## Tests for faceted_time_series_plot ##
+
+test_that("faceted_time_series_plot returns a ggplot object with valid toy data", {
+  # Ensure the timestamp column is in POSIXct format.
+  good_data <- sensor_concentrations
+  good_data$Group.1 <- as.POSIXct(good_data$Group.1)
+  # Create a simple wind_data list for plotting
+  wind_plot <- list(
+    wind_u = rep(1, nrow(good_data)),
+    wind_v = rep(1, nrow(good_data))
+  )
+  start_posix <- min(good_data$Group.1)
+  end_posix <- max(good_data$Group.1)
+  p <- faceted_time_series_plot(good_data, wind_plot, start_posix, end_posix, output_dt)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("faceted_time_series_plot errors when sensor_concentrations is not a data frame", {
+  bad_data <- list(a = 1)
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_posix <- as.POSIXct("2024-01-01 12:00:00")
+  end_posix <- as.POSIXct("2024-01-01 12:10:00")
+  expect_error(
+    faceted_time_series_plot(bad_data, wind_plot, start_posix, end_posix, output_dt),
+    "sensor_concentrations must be a data frame"
+  )
+})
+
+test_that("faceted_time_series_plot errors when 'Group.1' column is missing", {
+  bad_data <- sensor_concentrations
+  bad_data$Group.1 <- NULL
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_posix <- as.POSIXct("2024-01-01 12:00:00")
+  end_posix <- as.POSIXct("2024-01-01 12:09:00")
+  expect_error(
+    faceted_time_series_plot(bad_data, wind_plot, start_posix, end_posix, output_dt),
+    "sensor_concentrations must have a column named 'Group.1'"
+  )
+})
+
+test_that("faceted_time_series_plot errors when conversion of Group.1 fails", {
+  bad_data <- sensor_concentrations
+  bad_data$Group.1 <- "invalid time"
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_posix <- as.POSIXct("2024-01-01 12:00:00")
+  end_posix <- as.POSIXct("2024-01-01 12:09:00")
+  expect_error(
+    faceted_time_series_plot(bad_data, wind_plot, start_posix, end_posix, output_dt),
+    "Conversion of sensor_concentrations\\$Group.1 to POSIXct resulted in NA values"
+  )
+})
+
+test_that("faceted_time_series_plot errors when start_time is not POSIXct", {
+  good_data <- sensor_concentrations
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_bad <- "2024-01-01 12:00:00"  # not POSIXct
+  end_posix <- as.POSIXct("2024-01-01 12:09:00")
+  expect_error(
+    faceted_time_series_plot(good_data, wind_plot, start_bad, end_posix, output_dt),
+    "start_time must be a POSIXct object"
+  )
+})
+
+test_that("faceted_time_series_plot errors when end_time is not POSIXct", {
+  good_data <- sensor_concentrations
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_posix <- as.POSIXct("2024-01-01 12:00:00")
+  end_bad <- "2024-01-01 12:09:00"  # not POSIXct
+  expect_error(
+    faceted_time_series_plot(good_data, wind_plot, start_posix, end_bad, output_dt),
+    "end_time must be a POSIXct object"
+  )
+})
+
+test_that("faceted_time_series_plot errors when start_time is after end_time", {
+  good_data <- sensor_concentrations
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_posix <- as.POSIXct("2024-01-01 12:10:00")
+  end_posix <- as.POSIXct("2024-01-01 12:00:00")
+  expect_error(
+    faceted_time_series_plot(good_data, wind_plot, start_posix, end_posix, output_dt),
+    "start_time must be before end_time"
+  )
+})
+
+test_that("faceted_time_series_plot errors when output_dt is invalid", {
+  good_data <- sensor_concentrations
+  good_data$Group.1 <- as.POSIXct(good_data$Group.1)
+  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
+  start_posix <- as.POSIXct("2024-01-01 12:00:00")
+  end_posix <- as.POSIXct("2024-01-01 12:09:00")
+  expect_error(
+    faceted_time_series_plot(good_data, wind_plot, start_posix, end_posix, -10),
+    "output_dt must be a single positive numeric value"
+  )
+})
+
+test_that("faceted_time_series_plot errors when wind_data is not a list", {
+  good_data <- sensor_concentrations
+  good_data$Group.1 <- as.POSIXct(good_data$Group.1)
+  bad_wind <- "not a list"
+  start_posix <- as.POSIXct("2024-01-01 12:00:00")
+  end_posix <- as.POSIXct("2024-01-01 12:09:00")
+  expect_error(
+    faceted_time_series_plot(good_data, bad_wind, start_posix, end_posix, output_dt),
+    "wind_data must be a list"
+  )
+})
+
+
+# ---- Tests for create_site_map ----------------------------------------------
+
+test_that("create_site_map returns a ggplot object with valid data frames", {
+  sensors <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
+  sources <- data.frame(x = c(7, 8), y = c(9, 10))
+  p <- create_site_map(sensors, sources)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("create_site_map returns a ggplot object with valid matrices", {
+  sensors <- matrix(c(1, 4, 2, 5, 3, 6), ncol = 2, byrow = TRUE)
+  sources <- matrix(c(7, 9, 8, 10), ncol = 2, byrow = TRUE)
+  p <- create_site_map(sensors, sources)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("create_site_map errors when sensors is not a data frame or matrix", {
+  bad_sensors <- "not a data frame"
+  sources <- data.frame(x = c(7, 8), y = c(9, 10))
+  expect_error(
+    create_site_map(bad_sensors, sources),
+    "'sensors' must be a data frame or matrix"
+  )
+})
+
+test_that("create_site_map errors when sensors has fewer than two columns", {
+  bad_sensors <- data.frame(x = 1:3)
+  sources <- data.frame(x = c(7, 8), y = c(9, 10))
+  expect_error(
+    create_site_map(bad_sensors, sources),
+    "must have at least two columns"
+  )
+})
+
+test_that("create_site_map errors when sources has fewer than two columns", {
+  sensors <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
+  bad_sources <- data.frame(x = c(7, 8))
+  expect_error(
+    create_site_map(sensors, bad_sources),
+    "must have at least two columns"
+  )
+})
