@@ -80,7 +80,7 @@ start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
 source_coords <- c(0, 0, 2.5)
 emission_rate <- 3.5
-wind_data <- list(
+wind_data <- data.frame(
   wind_u = runif(61, min = -3, max = 0.7),
   wind_v = runif(61, min = -3, max = 1.5)
 )
@@ -124,7 +124,7 @@ start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time <- as.POSIXct("2024-01-01 13:00:00")
 source_coords <- c(0, 0, 2.5)
 emission_rate <- 3.5
-wind_data <- list(
+wind_data <- data.frame(
   wind_u = runif(3601, min = -3, max = 0.7),
   wind_v = runif(3601, min = -3, max = 1.5)
 )
