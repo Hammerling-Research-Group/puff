@@ -12,57 +12,30 @@
 #' @param frames Numeric. Duration between frames in the animation (milliseconds).
 #' @param transition Numeric. Duration for transitioning between frames (milliseconds).
 #' @param save Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.
+#' @param interpolate_grid Logical. If `TRUE`, applies interpolation to refine grid resolution and make the heatmap smoother. Default `FALSE`.
+#' @param granularity Numeric. Sets the number of points in the finer grid resolution when `interpolate_grid = TRUE`. Default `100`.
 #'
 #' @return A `plotly` object representing the animated heatmap.
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' data <- simulate_grid_mode(...)
-#' grid_coords <- list(x = ..., y = ..., z = ...)
-#' plot_2d_animated(data, grid_coords, "2025-01-01 00:00:00",
-#'                  "2025-01-01 01:00:00", "1 min", 100, 99, save = FALSE)
-#' }
 plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
                              frames = 100, transition = 99,
-                             save = FALSE) {
-  # chk: pkgs installed
-  if (!requireNamespace("plotly", quietly = TRUE)) {
-    stop("The 'plotly' package is required but not installed. Please install it.")
-  }
-  if (!requireNamespace("dplyr", quietly = TRUE)) {
-    stop("The 'dplyr' package is required but not installed. Please install it.")
-  }
-  if (!requireNamespace("htmlwidgets", quietly = TRUE) && save) {
-    stop("The 'htmlwidgets' package is required to save the plot as an HTML file. Please install it.")
-  }
+                             save = FALSE, interpolate_grid = FALSE,
+                             granularity = 100) {
+  # chk: required packages
+  if (!requireNamespace("plotly", quietly = TRUE)) stop("The 'plotly' package is required but not installed.")
+  if (!requireNamespace("dplyr", quietly = TRUE)) stop("The 'dplyr' package is required but not installed.")
+  if (!requireNamespace("htmlwidgets", quietly = TRUE) && save) stop("The 'htmlwidgets' package is required to save the plot.")
+  if (interpolate_grid && !requireNamespace("akima", quietly = TRUE)) stop("The 'akima' package is required for interpolation but not installed.")
 
   # chk: input classes / types
-  if (!is.matrix(data) && !is.array(data)) {
-    stop("'data' must be a matrix or an array.")
-  }
-  if (!is.list(grid_coords) ||
-      !all(c("x", "y", "z") %in% names(grid_coords))) {
-    stop("'grid_coords' must be a list containing 'x', 'y', and 'z' coordinates.")
-  }
-  if (!is.character(start) || !is.character(end)) {
-    stop("'start' and 'end' must be character strings in the format 'YYYY-MM-DD HH:MM:SS'.")
-  }
-  if (as.POSIXct(start) >= as.POSIXct(end)) {
-    stop("'start' time must be earlier than 'end' time.")
-  }
-  if (!is.character(output_dt) && !is.numeric(output_dt)) {
-    stop("'output_dt' must be a valid time interval (e.g., '1 min', '1 hour').")
-  }
-  if (!is.numeric(frames) || frames <= 0) {
-    stop("'frames' must be a positive numeric value.")
-  }
-  if (!is.numeric(transition) || transition < 0) {
-    stop("'transition' must be a non-negative numeric value.")
-  }
-  if (!is.logical(save)) {
-    stop("'save' must be a logical value (TRUE or FALSE).")
-  }
+  if (!is.matrix(data) && !is.array(data)) stop("'data' must be a matrix or an array.")
+  if (!is.list(grid_coords) || !all(c("x", "y", "z") %in% names(grid_coords))) stop("'grid_coords' must be a list containing 'x', 'y', and 'z' coordinates.")
+  if (!is.character(start) || !is.character(end)) stop("'start' and 'end' must be character strings in the format 'YYYY-MM-DD HH:MM:SS'.")
+  if (as.POSIXct(start) >= as.POSIXct(end)) stop("'start' time must be earlier than 'end' time.")
+  if (!is.character(output_dt) && !is.numeric(output_dt)) stop("'output_dt' must be a valid time interval (e.g., '1 min', '1 hour').")
+  if (!is.numeric(frames) || frames <= 0) stop("'frames' must be a positive numeric value.")
+  if (!is.numeric(transition) || transition < 0) stop("'transition' must be a non-negative numeric value.")
+  if (!is.logical(save)) stop("'save' must be a logical value (TRUE or FALSE).")
 
   # setup
   x_coords <- grid_coords$x
@@ -70,52 +43,68 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
   z_coords <- grid_coords$z
 
   # chk: empty or mismatched coordinate lengths?
-  if (length(x_coords) == 0 || length(y_coords) == 0 || length(z_coords) == 0) {
-    stop("Grid coordinates ('x', 'y', 'z') must not be empty.")
-  }
-  if (nrow(data) != length(seq(
-    from = as.POSIXct(start),
-    to = as.POSIXct(end),
-    by = output_dt
-  ))) {
+  if (length(x_coords) == 0 || length(y_coords) == 0 || length(z_coords) == 0) stop("Grid coordinates ('x', 'y', 'z') must not be empty.")
+  if (nrow(data) != length(seq(from = as.POSIXct(start), to = as.POSIXct(end), by = output_dt))) {
     stop("Number of time steps in 'data' does not match the sequence of timestamps derived from 'start', 'end', and 'output_dt'.")
   }
 
-  time_stamps <- seq(
-    from = as.POSIXct(start),
-    to = as.POSIXct(end),
-    by = output_dt
-  )
+  time_stamps <- seq(from = as.POSIXct(start), to = as.POSIXct(end), by = output_dt)
 
   # build concentration df
   concentration_data <- data.frame()
 
   for (t_idx in seq_along(time_stamps)) {
-    grid_concentration <- matrix(
-      data[t_idx, ],
-      nrow = length(x_coords),
-      ncol = length(y_coords)
-    )
+    grid_concentration <- matrix(data[t_idx, ], nrow = length(x_coords), ncol = length(y_coords))
     if (ncol(grid_concentration) != length(y_coords)) {
       warning("Mismatch between the dimensions of 'data' and the grid coordinates. Check your inputs.")
     }
-    long_data <- expand.grid(
-      x = x_coords,
-      y = y_coords,
-      z = z_coords
-    )
+
+    long_data <- expand.grid(x = x_coords, y = y_coords, z = z_coords)
     long_data$concentration <- as.vector(grid_concentration)
     long_data$time <- as.numeric(t_idx)
-    concentration_data <- rbind(
-      concentration_data,
-      long_data
-    )
+
+    concentration_data <- rbind(concentration_data, long_data)
+  }
+
+  # interpolation (if TRUE)
+  if (interpolate_grid) {
+    suppressWarnings({
+
+      fine_x <- seq(min(x_coords), max(x_coords), length.out = granularity)
+      fine_y <- seq(min(y_coords), max(y_coords), length.out = granularity)
+
+      interp_data <- data.frame()
+
+      for (t_idx in seq_along(time_stamps)) {
+        z_values <- matrix(data[t_idx, ], nrow = length(x_coords), ncol = length(y_coords))
+
+        interp_result <- akima::interp(
+          x = rep(x_coords, times = length(y_coords)),
+          y = rep(y_coords, each = length(x_coords)),
+          z = as.vector(z_values),
+          xo = fine_x,
+          yo = fine_y,
+          duplicate = "strip"
+        )
+
+        temp_df <- expand.grid(x = interp_result$x, y = interp_result$y)
+        temp_df$concentration <- as.vector(interp_result$z)
+        temp_df$concentration[is.na(temp_df$concentration)] <- 0
+        temp_df$time <- t_idx
+
+        interp_data <- rbind(interp_data, temp_df)
+      }
+
+      concentration_data <- interp_data
+    })
   }
 
   concentration_data <- concentration_data |>
     dplyr::mutate(time = as.factor(time))
 
   # plot
+  suppressWarnings({
+
   fig_heatmap <- plotly::plot_ly(
     data = concentration_data,
     x = ~x,
@@ -126,18 +115,16 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
     colorscale = list(c(0, 'blue'), c(0.5, 'yellow'), c(1, 'red')),
     colorbar = list(title = "Concentration (ppm)"),
     zmin = 0,
-    zmax = max(concentration_data$concentration, na.rm = TRUE)
+    zmax = max(concentration_data$concentration, na.rm = TRUE),
+    zsmooth = if (interpolate_grid) "best" else NULL
   ) |>
     plotly::layout(
       title = "Plume Movement Over Time (2D)",
       xaxis = list(title = "X Coordinate"),
       yaxis = list(title = "Y Coordinate")
     ) |>
-    plotly::animation_opts(
-      frame = frames,
-      transition = transition,
-      redraw = TRUE
-    )
+    plotly::animation_opts(frame = frames, transition = transition, redraw = TRUE)
+  })
 
   # save?
   if (save == TRUE) {
@@ -166,7 +153,7 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @param output_dt A character string or numeric value specifying the time interval between outputs.
 #' @param frames Numeric. Duration between frames in the animation (milliseconds).
 #' @param transition Numeric. Duration for transitioning between frames (milliseconds).
-#' @param plot_type Character. "scatter" (default) or "contour" to specify the type of plot.
+#' @param plot_type Character. "contour" (default) or "scatter" to specify the type of plot.
 #' @param save Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.
 #'
 #' @return A `plotly` object representing the animated plot.
@@ -177,59 +164,25 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #' plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",
-#'                  "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "scatter", save = TRUE)
+#'                  "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour", save = TRUE)
 #' }
 plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
-                             frames = 100, transition = 99, plot_type = "scatter", save = FALSE) {
+                             frames = 100, transition = 99, plot_type = "contour", save = FALSE) {
   # chk: pkgs
-  if (!requireNamespace("plotly", quietly = TRUE)) {
-    stop("The 'plotly' package is required but not installed.")
-  }
-
-  if (!requireNamespace("dplyr", quietly = TRUE)) {
-    stop("The 'dplyr' package is required but not installed.")
-  }
-
-  if (!requireNamespace("htmlwidgets", quietly = TRUE) && save) {
-    stop("The 'htmlwidgets' package is required to save the plot.")
-  }
+  if (!requireNamespace("plotly", quietly = TRUE)) stop("The 'plotly' package is required but not installed.")
+  if (!requireNamespace("dplyr", quietly = TRUE)) stop("The 'dplyr' package is required but not installed.")
+  if (!requireNamespace("htmlwidgets", quietly = TRUE) && save) stop("The 'htmlwidgets' package is required to save the plot.")
 
   # chk: data types / classes + other qc
-  if (!is.array(data)) {
-    stop("'data' must be a 3D array.")
-  }
-
-  if (!is.list(grid_coords) || !all(c("x", "y", "z") %in% names(grid_coords))) {
-    stop("'grid_coords' must contain 'x', 'y', and 'z'.")
-  }
-
-  if (!is.character(start) || !is.character(end)) {
-    stop("'start' and 'end' must be character strings.")
-  }
-
-  if (as.POSIXct(start) >= as.POSIXct(end)) {
-    stop("'start' time must be earlier than 'end' time.")
-  }
-
-  if (!is.character(output_dt) && !is.numeric(output_dt)) {
-    stop("'output_dt' must be a valid time interval.")
-  }
-
-  if (!is.numeric(frames) || frames <= 0) {
-    stop("'frames' must be a positive number.")
-  }
-
-  if (!is.numeric(transition) || transition < 0) {
-    stop("'transition' must be non-negative.")
-  }
-
-  if (!plot_type %in% c("scatter", "contour")) {
-    stop("'plot_type' must be either 'scatter' or 'contour'.")
-  }
-
-  if (!is.logical(save)) {
-    stop("'save' must be TRUE or FALSE.")
-  }
+  if (!is.array(data)) stop("'data' must be a 3D array.")
+  if (!is.list(grid_coords) || !all(c("x", "y", "z") %in% names(grid_coords))) stop("'grid_coords' must contain 'x', 'y', and 'z'.")
+  if (!is.character(start) || !is.character(end)) stop("'start' and 'end' must be character strings.")
+  if (as.POSIXct(start) >= as.POSIXct(end)) stop("'start' time must be earlier than 'end' time.")
+  if (!is.character(output_dt) && !is.numeric(output_dt)) stop("'output_dt' must be a valid time interval.")
+  if (!is.numeric(frames) || frames <= 0) stop("'frames' must be a positive number.")
+  if (!is.numeric(transition) || transition < 0) stop("'transition' must be non-negative.")
+  if (!plot_type %in% c("scatter", "contour")) stop("'plot_type' must be either 'scatter' or 'contour'.")
+  if (!is.logical(save)) stop("'save' must be TRUE or FALSE.")
 
   # setup
   x_coords <- grid_coords$x
@@ -665,18 +618,18 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, start_tim
 
   ## Process sensor_concentrations:
   ## First, rename "Group.1" to "time" in a new data frame.
-  sensor_df <- sensor_concentrations %>% dplyr::rename(time = Group.1)
+  sensor_df <- sensor_concentrations |> dplyr::rename(time = Group.1)
   # Explicitly select all sensor columns (all columns except "time")
   sensor_cols <- setdiff(names(sensor_df), "time")
   if (length(sensor_cols) < 1) {
     stop("No sensor concentration columns found after renaming.")
   }
-  sensor_long <- sensor_df %>%
+  sensor_long <- sensor_df |>
     tidyr::pivot_longer(
       cols = sensor_cols,
       names_to = "sensor",
       values_to = "value"
-    ) %>%
+    ) |>
     dplyr::mutate(variable = "concentration",
                   plot_color = sensor)
 
@@ -686,12 +639,12 @@ faceted_time_series_plot <- function(sensor_concentrations, wind_data, start_tim
     wind_u = wind_u_subset[seq_len(nrow(sensor_concentrations))],
     wind_v = wind_v_subset[seq_len(nrow(sensor_concentrations))]
   )
-  wind_long <- wind_df %>%
+  wind_long <- wind_df |>
     tidyr::pivot_longer(
       cols = c(wind_u, wind_v),
       names_to = "sensor",
       values_to = "value"
-    ) %>%
+    ) |>
     dplyr::mutate(variable = sensor,  # will be "wind_u" or "wind_v"
                   plot_color = sensor)
 
