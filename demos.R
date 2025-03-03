@@ -7,14 +7,7 @@ puff_dt <- 10
 output_dt <- 60
 start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
-source_coords <- c(0, 0, 2.5)
-emission_rate <- 3.5
-
-# Generate simulation time stamps and compute the number of steps.
-sim_times <- seq(from = as.POSIXct(start_time), to = as.POSIXct(end_time), by = sim_dt)
-n_steps   <- length(sim_times)
-# Create a time vector in seconds relative to the start time.
-times_sec <- as.numeric(difftime(sim_times, sim_times[1], units = "secs"))
+emission_rate <- 3.6
 
 # Create variable wind data: wind speed oscillates sinusoidally.
 wind_data <- data.frame(
@@ -22,10 +15,23 @@ wind_data <- data.frame(
   wind_v = 1 + 0.5 * cos(2 * pi * times_sec / max(times_sec))   # oscillates around 1 m/s
 )
 
-# Define sensor coordinateS
-# Here the sensor is placed at (100, 0, 0) (i.e., 100 m east of the source at ground level).
-sensor_coords <- matrix(c(100, 0, 0), ncol = 3, byrow = TRUE)
-
+sensors <- matrix(c(-105.139155,40.595749,2.4,
+                    -105.139609,40.595802,2.4,
+                    -105.139256,40.596088, 2.4,
+                    -105.139756, 40.596092,2.4,
+                    -105.139849, 40.595483,2.4,
+                    -105.13926, 40.595453,2.4,
+                    -105.140355, 40.595482,2.4,
+                    -105.140577, 40.595809,2.4,
+                    -105.140135, 40.595808,2.4,
+                    -105.140608, 40.596101,2.4),
+                  ncol=3, byrow = TRUE)
+sources <- matrix(c(-105.13986, 40.5957,4.5,
+                    -105.13942, 40.59592, 2,
+                    -105.13941,40.59565,2,
+                    -105.140313,40.59594,2,
+                    -105.140294, 40.59563,2),
+                  ncol=3, byrow = TRUE)
 sensor_concentrations <- simulate_sensor_mode(
   sim_dt        = sim_dt,
   puff_dt       = puff_dt,
@@ -45,8 +51,23 @@ single_emission_rate_plot(sensor_concentrations, sensor_coords)
 
 
 ## SITE MAP
-sensors <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
-sources <- data.frame(x = c(7, 8), y = c(9, 10))
+sensors <- matrix(c(-105.139155,40.595749,2.4,
+                    -105.139609,40.595802,2.4,
+                    -105.139256,40.596088, 2.4,
+                    -105.139756, 40.596092,2.4,
+                    -105.139849, 40.595483,2.4,
+                    -105.13926, 40.595453,2.4,
+                    -105.140355, 40.595482,2.4,
+                    -105.140577, 40.595809,2.4,
+                    -105.140135, 40.595808,2.4,
+                    -105.140608, 40.596101,2.4),
+                  ncol=3, byrow = TRUE)
+sources <- matrix(c(-105.13986, 40.5957,4.5,
+                    -105.13942, 40.59592, 2,
+                    -105.13941,40.59565,2,
+                    -105.140313,40.59594,2,
+                   -105.140294, 40.59563,2),
+                  ncol=3, byrow = TRUE)
 
 create_site_map(sensors, sources)
 
@@ -78,14 +99,30 @@ puff_dt <- 10
 output_dt <- 60
 start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
-source_coords <- c(0, 0, 2.5)
-emission_rate <- 3.5
+emission_rate <- 3.6
 wind_data <- data.frame(
   wind_u = runif(61, min = -3, max = 0.7),
   wind_v = runif(61, min = -3, max = 1.5)
 )
 # sensor_coords with one sensor
-sensor_coords <- matrix(c(1, 2, 3), ncol = 3, byrow = TRUE)
+
+sensors <- matrix(c(-105.139155,40.595749,2.4,
+                    -105.139609,40.595802,2.4,
+                    -105.139256,40.596088, 2.4,
+                    -105.139756, 40.596092,2.4,
+                    -105.139849, 40.595483,2.4,
+                    -105.13926, 40.595453,2.4,
+                    -105.140355, 40.595482,2.4,
+                    -105.140577, 40.595809,2.4,
+                    -105.140135, 40.595808,2.4,
+                    -105.140608, 40.596101,2.4),
+                  ncol=3, byrow = TRUE)
+sources <- matrix(c(-105.13986, 40.5957,4.5,
+                    -105.13942, 40.59592, 2,
+                    -105.13941,40.59565,2,
+                    -105.140313,40.59594,2,
+                    -105.140294, 40.59563,2),
+                  ncol=3, byrow = TRUE)
 
 sensor_concentrations <- simulate_sensor_mode(sim_dt, puff_dt, output_dt,
                                               start_time, end_time,

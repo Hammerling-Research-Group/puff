@@ -402,20 +402,19 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
   sensor_data$time_label <- format(sensor_data$timestamp, "%H:%M")
 
-  plot <- ggplot2::ggplot(sensor_data, ggplot2::aes(x = timestamp, y = y, fill = concentration)) +
-    ggplot2::geom_tile() +
-    ggplot2::scale_fill_gradientn(colors = c("blue", "red", "yellow"), name = "Concentration") +
+  plot <- ggplot2::ggplot(sensor_data, ggplot2::aes(x = timestamp, y = concentration)) +
+    ggplot2::geom_point(ggplot2::aes(color = concentration, size = concentration), alpha = 0.7) +
+    ggplot2::scale_color_gradient(low = "blue", high = "yellow") +
+    ggplot2::scale_size_continuous(range = c(1, 10)) +
     ggplot2::labs(
       title = "Sensor Concentrations Over Time",
-      x = "Time (Hour:Minute)",
-      y = NULL
+      x = "Time",
+      y = "Concentration",
+      color = "Concentration",
+      size = "Concentration"
     ) +
     ggplot2::theme_minimal() +
-    ggplot2::theme(
-      axis.text.y = ggplot2::element_blank(),
-      axis.ticks.y = ggplot2::element_blank(),
-      panel.grid = ggplot2::element_blank()
-    )
+    ggplot2::theme(legend.position = "right")
 
   return(plot)
 }
