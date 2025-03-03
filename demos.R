@@ -62,6 +62,7 @@ sensors <- matrix(c(-105.139155,40.595749,2.4,
                     -105.140135, 40.595808,2.4,
                     -105.140608, 40.596101,2.4),
                   ncol=3, byrow = TRUE)
+
 sources <- matrix(c(-105.13986, 40.5957,4.5,
                     -105.13942, 40.59592, 2,
                     -105.13941,40.59565,2,
@@ -126,8 +127,8 @@ sources <- matrix(c(-105.13986, 40.5957,4.5,
 
 sensor_concentrations <- simulate_sensor_mode(sim_dt, puff_dt, output_dt,
                                               start_time, end_time,
-                                              source_coords, emission_rate,
-                                              wind_data, sensor_coords)
+                                              sources, emission_rate,
+                                              wind_data, sensors)
 
 faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
 
@@ -185,9 +186,9 @@ start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
 source_coords <- c(0, 0, 2.5)
 emission_rate <- 3.5
-wind_data <- list(
-  runif(61, min = -3, max = 0.7),
-  runif(61, min = -3, max = 1.5)
+wind_data <- data.frame(
+  wind_u = runif(61, min = -3, max = 0.7),
+  wind_v = runif(61, min = -3, max = 1.5)
 )
 # sensor_coords with two sensors
 sensor_coords <- matrix(c(1, 2, 3,
@@ -199,3 +200,42 @@ sensor_concentrations <- simulate_sensor_mode(sim_dt, puff_dt, output_dt,
                                               wind_data, sensor_coords)
 
 faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
+
+
+# 2d animated
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+grid_coords <- list(
+  x = seq(-5, 5, by = 1),
+  y = seq(-5, 5, by = 1),
+  z = c(2.5)
+)
+
+grid_results <- readr::read_rds(file.choose())
+
+plot_2d_animated(data = grid_results$grid_concentrations_1,
+                 grid_coords = grid_coords,
+                 start = start_time,
+                 end = end_time,
+                 output_dt = output_dt,
+                 interpolate_grid = TRUE)
+
+
+# 3d animated
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+grid_coords2 <- list(
+  x = seq(1, 25, by = 1),
+  y = seq(1, 25, by = 1),
+  z = seq(1, 10, by = 1)
+)
+
+grid_concentrations <- readr::read_rds(file.choose())
+
+plot_3d_animated(data = grid_concentrations,
+                 grid_coords = grid_coords2,
+                 start = start_time,
+                 end = end_time,
+                 output_dt = output_dt,
+                 save = FALSE)
+
