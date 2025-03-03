@@ -12,7 +12,9 @@ plot_2d_animated(
   output_dt,
   frames = 100,
   transition = 99,
-  save = FALSE
+  save = FALSE,
+  interpolate_grid = FALSE,
+  granularity = 100
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ plot_2d_animated(
 \item{transition}{Numeric. Duration for transitioning between frames (milliseconds).}
 
 \item{save}{Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.}
+
+\item{interpolate_grid}{Logical. If `TRUE`, applies interpolation to refine grid resolution and make the heatmap smoother. Default `FALSE`.}
+
+\item{granularity}{Numeric. Sets the number of points in the finer grid resolution when `interpolate_grid = TRUE`. Default `100`.}
 }
 \value{
 A `plotly` object representing the animated heatmap.
@@ -39,12 +45,4 @@ A `plotly` object representing the animated heatmap.
 This function generates a 2D animated heatmap using `plotly` to visualize the
 movement of a plume over time. The animation is based on grid concentration data
 from `simulate_grid_mode()` output.
-}
-\examples{
-\dontrun{
-data <- simulate_grid_mode(...)
-grid_coords <- list(x = ..., y = ..., z = ...)
-plot_2d_animated(data, grid_coords, "2025-01-01 00:00:00",
-                 "2025-01-01 01:00:00", "1 min", 100, 99, save = FALSE)
-}
 }

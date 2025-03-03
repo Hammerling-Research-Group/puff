@@ -12,7 +12,7 @@ plot_3d_animated(
   output_dt,
   frames = 100,
   transition = 99,
-  plot_type = "scatter",
+  plot_type = "contour",
   save = FALSE
 )
 }
@@ -31,7 +31,7 @@ plot_3d_animated(
 
 \item{transition}{Numeric. Duration for transitioning between frames (milliseconds).}
 
-\item{plot_type}{Character. "scatter" (default) or "contour" to specify the type of plot.}
+\item{plot_type}{Character. "contour" (default) or "scatter" to specify the type of plot.}
 
 \item{save}{Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.}
 }
@@ -48,6 +48,6 @@ from `simulate_grid_mode()` output.
 grid_concentrations <- array(...)  # 3D concentration array
 grid_coords <- list(x = ..., y = ..., z = ...)
 plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",
-                 "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "scatter", save = TRUE)
+                 "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour", save = TRUE)
 }
 }
