@@ -9,12 +9,6 @@ start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
 emission_rate <- 3.6
 
-# Generate simulation time stamps and compute the number of steps.
-sim_times <- seq(from = as.POSIXct(start_time), to = as.POSIXct(end_time), by = sim_dt)
-n_steps   <- length(sim_times)
-# Create a time vector in seconds relative to the start time.
-times_sec <- as.numeric(difftime(sim_times, sim_times[1], units = "secs"))
-
 # Create variable wind data: wind speed oscillates sinusoidally.
 wind_data <- data.frame(
   wind_u = 2 + 0.5 * sin(2 * pi * times_sec / max(times_sec)),  # oscillates around 2 m/s
