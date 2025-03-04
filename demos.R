@@ -9,7 +9,10 @@ start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
 emission_rate <- 3.6
 
-# Create variable wind data
+sim_times <- seq(from = as.POSIXct(start_time), to = as.POSIXct(end_time), by = sim_dt)
+n_steps   <- length(sim_times)
+times_sec <- as.numeric(difftime(sim_times, sim_times[1], units = "secs"))
+
 wind_data <- data.frame(
   wind_u = 2 + 0.5 * sin(2 * pi * times_sec / max(times_sec)),
   wind_v = 1 + 0.5 * cos(2 * pi * times_sec / max(times_sec))
@@ -199,8 +202,8 @@ sensor_concentrations <- simulate_sensor_mode(sim_dt, puff_dt, output_dt,
                                               source_coords, emission_rate,
                                               wind_data, sensor_coords)
 
-faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
 
+faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
 
 # 2d animated
 start_time <- "2024-01-01 12:00:00"
