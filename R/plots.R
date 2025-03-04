@@ -241,9 +241,9 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
         color = ~concentration,
         colorscale = list(
           c(0, 'blue'),
-          c(0.25, 'cyan'),
+          #c(0.25, 'cyan'),
           c(0.5, 'yellow'),
-          c(0.75, 'orange'),
+          #c(0.75, 'orange'),
           c(1, 'red')
         ),
         colorbar = list(title = "Concentration (ppm)"),
@@ -286,9 +286,9 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
       surface = list(show = TRUE, count = 30),
       colorscale = list(
         c(0, 'blue'),
-        c(0.25, 'cyan'),
+        #c(0.25, 'cyan'),
         c(0.5, 'yellow'),
-        c(0.75, 'orange'),
+        #c(0.75, 'orange'),
         c(1, 'red')
       ),
       colorbar = list(title = "Concentration (ppm)"),
@@ -404,7 +404,7 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
   plot <- ggplot2::ggplot(sensor_data, ggplot2::aes(x = timestamp, y = concentration)) +
     ggplot2::geom_point(ggplot2::aes(color = concentration, size = concentration), alpha = 0.7) +
-    ggplot2::scale_color_gradient(low = "blue", high = "yellow") +
+    ggplot2::scale_color_gradient(low = "blue", high = "red") +
     ggplot2::scale_size_continuous(range = c(1, 10)) +
     ggplot2::labs(
       title = "Sensor Concentrations Over Time",

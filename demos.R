@@ -9,10 +9,10 @@ start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time   <- as.POSIXct("2024-01-01 12:10:00")
 emission_rate <- 3.6
 
-# Create variable wind data: wind speed oscillates sinusoidally.
+# Create variable wind data
 wind_data <- data.frame(
-  wind_u = 2 + 0.5 * sin(2 * pi * times_sec / max(times_sec)),  # oscillates around 2 m/s
-  wind_v = 1 + 0.5 * cos(2 * pi * times_sec / max(times_sec))   # oscillates around 1 m/s
+  wind_u = 2 + 0.5 * sin(2 * pi * times_sec / max(times_sec)),
+  wind_v = 1 + 0.5 * cos(2 * pi * times_sec / max(times_sec))
 )
 
 sensors <- matrix(c(-105.139155,40.595749,2.4,
