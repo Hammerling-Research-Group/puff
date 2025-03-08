@@ -41,14 +41,14 @@ sensor_concentrations <- simulate_sensor_mode(
   output_dt     = output_dt,
   start_time    = start_time,
   end_time      = end_time,
-  source_coords = source_coords,  # source location
+  source_coords = sources,  # source location
   emission_rate = emission_rate,
   wind_data     = wind_data,
-  sensor_coords = sensor_coords,  # sensor location (only one sensor in this case)
+  sensor_coords = sensors,  # sensor location (only one sensor in this case)
   puff_duration = 1200          # duration (in sec) that each puff remains active
 )
 
-single_emission_rate_plot(sensor_concentrations, sensor_coords)
+single_emission_rate_plot(sensor_concentrations, sensors)
 
 
 
@@ -133,7 +133,7 @@ sensor_concentrations <- simulate_sensor_mode(sim_dt, puff_dt, output_dt,
                                               sources, emission_rate,
                                               wind_data, sensors)
 
-faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
+faceted_time_series_plot(sensor_concentrations, sensors, wind_data, start_time, end_time, output_dt)
 
 # EXAMPLE 2: Invalid Wind Data (Only One Component Provided)
 sim_dt <- 10
