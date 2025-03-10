@@ -41,7 +41,7 @@ sensor_concentrations <- simulate_sensor_mode(
   output_dt     = output_dt,
   start_time    = start_time,
   end_time      = end_time,
-  source_coords = sources,  # source location
+  source_coords = sources,
   emission_rate = emission_rate,
   wind_data     = wind_data,
   sensor_coords = sensors,  # sensor location (only one sensor in this case)
@@ -132,8 +132,10 @@ sensor_concentrations <- simulate_sensor_mode(sim_dt, puff_dt, output_dt,
                                               start_time, end_time,
                                               sources, emission_rate,
                                               wind_data, sensors)
-
 faceted_time_series_plot(sensor_concentrations, sensors, wind_data, start_time, end_time, output_dt)
+
+# new approach with wind rose plots instead
+faceted_time_series_plot2(sensor_concentrations, sensors, wind_data, start_time, end_time, output_dt)
 
 # EXAMPLE 2: Invalid Wind Data (Only One Component Provided)
 sim_dt <- 10
