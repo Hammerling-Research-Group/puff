@@ -597,31 +597,36 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
 
   sensor_data$time_label <- format(sensor_data$timestamp, "%H:%M")
 
-  p1 <- ggplot2::ggplot(sensor_data, ggplot2::aes(x = timestamp, y = concentration)) +
-    ggplot2::geom_point(ggplot2::aes(color = concentration, size = concentration), alpha = 0.7) +
-    ggplot2::scale_color_gradientn(
+  p1 <- ggplot(sensor_data, aes(x = timestamp, y = concentration)) +
+    geom_point(aes(color = concentration, size = concentration), alpha = 0.7) +
+    scale_color_gradientn(
       colors = c("blue", "yellow", "red"),
-      values = scales::rescale(c(0, 0.5, 1))
+      values = scales::rescale(c(min(sensor_data$concentration),
+                                 mean(sensor_data$concentration),
+                                 max(sensor_data$concentration))),
+      breaks = pretty(sensor_data$concentration, n = 7),
+      guide = "legend"
     ) +
-    ggplot2::scale_size_continuous(range = c(1, 10)) +
-    ggplot2::labs(
+    scale_size_continuous(
+      range = c(1, 10),
+      breaks = pretty(sensor_data$concentration, n = 7),
+      guide = "legend"
+    ) +
+    labs(
       title = "Sensor Concentrations Over Time",
       x = "Time",
       y = "Concentration (ppm)",
       color = "Concentration",
       size = "Concentration"
     ) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(legend.position = "right")
+    theme_minimal() +
+    theme(legend.position = "right")
 
   #############################
   ##  Panel 2: Wind Plot     ##
   #############################
   if (!is.list(wind_data)) {
     stop("wind_data must be a list containing wind components.")
-  }
-  if (length(wind_data) < 2) {
-    stop("wind_data must contain at least two elements (for u and v components).")
   }
 
   wind_u <- wind_data$wind_u
@@ -635,42 +640,54 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
     time = as.POSIXct(sensor_concentrations$Group.1[seq_len(length(time_sequence))], format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
     wind_u = wind_u_subset,
     wind_v = wind_v_subset
-  ) |>
-    dplyr::mutate(
+  ) %>%
+    mutate(
       wind_speed = sqrt(wind_u^2 + wind_v^2),
       angle = atan2(wind_v, wind_u) * (180 / pi),
-      direction = dplyr::case_when(
-        angle >= -22.5 & angle < 22.5 ~ "E",
-        angle >= 22.5 & angle < 67.5 ~ "NE",
-        angle >= 67.5 & angle < 112.5 ~ "N",
+      direction = case_when(
+        angle >= -22.5 & angle < 22.5  ~ "E",
+        angle >= 22.5 & angle < 67.5   ~ "NE",
+        angle >= 67.5 & angle < 112.5  ~ "N",
         angle >= 112.5 & angle < 157.5 ~ "NW",
         angle >= -67.5 & angle < -22.5 ~ "SE",
         angle >= -112.5 & angle < -67.5 ~ "S",
         angle >= -157.5 & angle < -112.5 ~ "SW",
         TRUE ~ "W"
+      ),
+
+      plot_angle = case_when(
+        direction == "N"  ~ pi / 2,       # up
+        direction == "NE" ~ pi / 4,       # up-right
+        direction == "E"  ~ 0,            # right
+        direction == "SE" ~ -pi / 4,      # down-right
+        direction == "S"  ~ -pi / 2,      # down
+        direction == "SW" ~ -3 * pi / 4,  # down-left
+        direction == "W"  ~ pi,           # left
+        direction == "NW" ~ 3 * pi / 4    # up-left
       )
     )
 
-  wind_scale_factor <- 0.1
-
-  p2 <- ggplot2::ggplot() +
-    ggplot2::geom_spoke(
+  p2 <- ggplot() +
+    geom_spoke(
       data = wind_df,
-      ggplot2::aes(x = time, y = 0, angle = atan2(wind_v, wind_u), radius = wind_speed * wind_scale_factor),
-      arrow = ggplot2::arrow(length = grid::unit(0.1, "cm"))
+      aes(x = time, y = wind_speed, angle = plot_angle, radius = wind_speed * 0.1),
+      arrow = arrow(length = unit(0.2, "cm")),
+      color = "black"
     ) +
-    ggplot2::geom_text(
+    geom_text(
       data = wind_df,
-      ggplot2::aes(x = time, y = 0.5, label = direction),
+      aes(x = time, y = wind_speed + 0.05, label = direction),
       size = 3, vjust = -0.5
     ) +
-    ggplot2::labs(
+    labs(
       title = "Wind Speed and Direction Over Time",
       x = "Time",
-      y = "Wind"
+      y = "Wind Speed (m/s)"
     ) +
-    ggplot2::scale_x_datetime(date_labels = "%H:%M:%S") +
-    ggplot2::theme_minimal()
+    scale_x_datetime(date_labels = "%H:%M:%S") +
+    scale_y_continuous(limits = c(min(wind_df$wind_speed), max(wind_df$wind_speed))) +
+    theme_minimal()
+
 
   combined_plot <- p1 / p2 +
     patchwork::plot_annotation(title = "Sensor Concentrations and Wind Speed Over Time")

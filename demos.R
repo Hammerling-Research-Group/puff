@@ -1,5 +1,9 @@
 devtools::load_all()
 
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(patchwork)
 ## SINGLE EMISSION RATE CONCENTRATION PLOT
 
 sim_dt <- 10
