@@ -545,6 +545,9 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
     }
   }
 
+  library(tidyverse)
+  library(patchwork)
+
   ############################
   ##  Panel 1: Sensor Plot  ##
   ############################
@@ -604,23 +607,24 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
       values = scales::rescale(c(min(sensor_data$concentration),
                                  mean(sensor_data$concentration),
                                  max(sensor_data$concentration))),
-      breaks = pretty(sensor_data$concentration, n = 7),
+      breaks = pretty(sensor_data$concentration, n = 10),
       guide = "legend"
     ) +
     scale_size_continuous(
       range = c(1, 10),
-      breaks = pretty(sensor_data$concentration, n = 7),
+      breaks = pretty(sensor_data$concentration, n = 10),
       guide = "legend"
     ) +
     labs(
-      title = "Sensor Concentrations Over Time",
+      title = "Sensor Concentrations",
       x = "Time",
       y = "Concentration (ppm)",
-      color = "Concentration",
-      size = "Concentration"
+      color = "Concentration (ppm)",
+      size = "Concentration (ppm)",
+      caption = "Point size and color correspond to concentration levels."
     ) +
-    theme_minimal() +
-    theme(legend.position = "right")
+    theme_bw() +
+    theme(legend.position = "none")
 
   #############################
   ##  Panel 2: Wind Plot     ##
@@ -640,7 +644,7 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
     time = as.POSIXct(sensor_concentrations$Group.1[seq_len(length(time_sequence))], format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
     wind_u = wind_u_subset,
     wind_v = wind_v_subset
-  ) %>%
+  ) |>
     mutate(
       wind_speed = sqrt(wind_u^2 + wind_v^2),
       angle = atan2(wind_v, wind_u) * (180 / pi),
@@ -653,50 +657,33 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
         angle >= -112.5 & angle < -67.5 ~ "S",
         angle >= -157.5 & angle < -112.5 ~ "SW",
         TRUE ~ "W"
-      ),
-
-      plot_angle = case_when(
-        direction == "N"  ~ pi / 2,       # up
-        direction == "NE" ~ pi / 4,       # up-right
-        direction == "E"  ~ 0,            # right
-        direction == "SE" ~ -pi / 4,      # down-right
-        direction == "S"  ~ -pi / 2,      # down
-        direction == "SW" ~ -3 * pi / 4,  # down-left
-        direction == "W"  ~ pi,           # left
-        direction == "NW" ~ 3 * pi / 4    # up-left
       )
     )
 
-  p2 <- ggplot() +
-    geom_spoke(
-      data = wind_df,
-      aes(x = time, y = wind_speed, angle = plot_angle, radius = wind_speed * 0.1),
-      arrow = arrow(length = unit(0.2, "cm")),
-      color = "black"
-    ) +
-    geom_text(
-      data = wind_df,
-      aes(x = time, y = wind_speed + 0.05, label = direction),
-      size = 3, vjust = -0.5
-    ) +
+  wind_rose_data <- wind_df |>
+    group_by(time, direction) |>
+    summarise(mean_wind_speed = mean(wind_speed, na.rm = TRUE), .groups = "drop")
+
+  p2 <- ggplot(wind_rose_data, aes(x = direction, y = mean_wind_speed)) +
+    geom_col() +
+    coord_polar(start = -0.4) +
+    scale_x_discrete(limits = c("N", "NE", "E", "SE", "S", "SW", "W", "NW")) +
     labs(
-      title = "Wind Speed and Direction Over Time",
-      x = "Time",
-      y = "Wind Speed (m/s)"
+      title = "Wind Conditions",
+      x = "Wind Direction",
+      y = "Avgerage Wind Speed (m/s)"
     ) +
-    scale_x_datetime(date_labels = "%H:%M:%S") +
-    scale_y_continuous(limits = c(min(wind_df$wind_speed), max(wind_df$wind_speed))) +
-    theme_minimal()
+    theme_minimal() +
+    theme(legend.position = "none")
 
-
-  combined_plot <- p1 / p2 +
-    patchwork::plot_annotation(title = "Sensor Concentrations and Wind Speed Over Time")
+  combined_plot <- (p1 + p2) +
+    patchwork::plot_annotation(title = "Sensor Concentrations and Wind Conditions Over Time")
 
   return(combined_plot)
 }
 
 
-#' Alternate version with wind rose option + scatter plot of methane concentration time series
+#' Alternate version with wind rose at each time step + scatter plot of methane concentration time series
 #'
 #' @param sensor_concentrations Data frame. Output from a sensor simulation function,
 #'   which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
@@ -706,7 +693,7 @@ faceted_time_series_plot <- function(sensor_concentrations, sensor_coords, wind_
 #' @param start_time POSIXct. Start time of the simulation.
 #' @param end_time POSIXct. End time of the simulation.
 #'
-#' @return A ggplot object with faceted time series plots of methane concentrations and wind data.
+#' @return A ggplot object with faceted time series plots of methane concentrations and wind rose data.
 #'
 #' @export
 faceted_time_series_plot2 <- function(sensor_concentrations, sensor_coords, wind_data, start_time, end_time, output_dt) {
@@ -759,14 +746,15 @@ faceted_time_series_plot2 <- function(sensor_concentrations, sensor_coords, wind
       guide = "legend"
     ) +
     labs(
-      title = "Sensor Concentrations Over Time",
+      title = "Sensor Concentrations",
       x = "Time",
       y = "Concentration (ppm)",
       color = "Concentration",
-      size = "Concentration"
+      size = "Concentration",
+      caption = "Point size and color correspond to concentration levels."
     ) +
     theme_minimal() +
-    theme(legend.position = "right")
+    theme(legend.position = "none")
 
   #############################
   ##  Panel 2: Wind Rose Plot ##
@@ -812,13 +800,13 @@ faceted_time_series_plot2 <- function(sensor_concentrations, sensor_coords, wind
     drop_na(time)
 
   p2 <- ggplot(wind_rose_data, aes(x = direction, y = wind_speed)) +
-    geom_col(fill = "black", width = 0.5 * max(wind_rose_data$wind_speed, na.rm = TRUE)) +
-    coord_polar(start = -pi/2) +
+    geom_col(fill = "black", width = 0.5 * max(wind_rose_data$wind_speed, na.rm = TRUE), position = "identity") +
+    coord_polar(start = -0.5) +
     facet_wrap(~ time, nrow = 1) +
     scale_y_continuous(limits = c(0, max(wind_rose_data$wind_speed)), expand = c(0, 0)) +
     scale_x_discrete(limits = c("N", "NE", "E", "SE", "S", "SW", "W", "NW")) +
     labs(
-      title = "Wind Roses Over Time",
+      title = " ",
       x = NULL,
       y = "",
       caption = "Wind speed (m/s) corresponds to wedge width in wind rose plots."
@@ -835,9 +823,9 @@ faceted_time_series_plot2 <- function(sensor_concentrations, sensor_coords, wind
   ########################
   ##  Combine Plots    ##
   ########################
-  combined_plot <- p1 / p2 +
-    plot_layout(heights = c(2,1)) +
-    plot_annotation(title = "Sensor Concentrations and Wind Roses Over Time")
+  combined_plot <- (p1 / p2) +
+    patchwork::plot_layout(heights = c(2, 1)) +
+    patchwork::plot_annotation(title = "Sensor Concentrations and Wind Roses Over Time")
 
   return(combined_plot)
 

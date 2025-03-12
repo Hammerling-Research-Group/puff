@@ -6,6 +6,7 @@
 \usage{
 faceted_time_series_plot(
   sensor_concentrations,
+  sensor_coords,
   wind_data,
   start_time,
   end_time,
