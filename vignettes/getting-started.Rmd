@@ -18,16 +18,12 @@ knitr::opts_chunk$set(
 library(puff)
 ```
 
-```{r echo = FALSE}
-devtools::load_all()
-```
-
 Let's walk through a basic use case for the `puff` package. To do so, we will cover: 
 
   - Sensor mode
   - Grid mode
   
-For each of these "modes", the workflow typically includes something like running the simulation to produce emission concentration values (either at individual *sensor* locations or over the full *grid* of the site), and then plot the results in a variety of ways with a variety of views. The latter task is at the heart of this package, which is the ability to produce accurate, clean, and publication-ready plots. Therefore, this vigentte focuses mostly on the plotting capabilities of `puff` rather than the siumulation / modeling part. 
+For each of these "modes", the workflow typically includes something like running the simulation to produce emission concentration values (either at individual *sensor* locations or over the full *grid* of the site), and then plot the results in a variety of ways with a variety of views. The latter task is at the heart of this package, which is the ability to produce accurate, clean, and publication-ready plots. Therefore, this vigentte focuses mostly on the plotting capabilities of `puff` rather than the simulation / modeling part. 
 
 ## Run the Simulation: Sensor Mode
 

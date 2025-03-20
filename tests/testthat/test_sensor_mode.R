@@ -1,5 +1,4 @@
 library(testthat)
-devtools::load_all()
 
 # setup
 sim_dt <- 10
@@ -83,6 +82,11 @@ test_that("Concentration values are non-negative", {
 
 test_that("Output time intervals match output_dt", {
   output_times <- as.POSIXct(result[, 1], format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+
   diffs <- as.numeric(diff(output_times, units = "secs"))
-  expect_true(all(diffs == 1))
+
+  expect_false(anyNA(output_times), info = "There are NA values in the time column")
+  expect_false(any(duplicated(output_times)), info = "There are duplicated timestamps")
+
+  expect_true(all(abs(diffs - output_dt) < 1e-6), info = "Time intervals do not match output_dt")
 })

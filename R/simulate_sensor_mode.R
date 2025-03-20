@@ -51,7 +51,6 @@
 #'     emission_rate, wind_data, sensor_coords, puff_duration
 #'   )
 #' }
-#'
 #' @export
 simulate_sensor_mode <- function(sim_dt, puff_dt, output_dt,
                                  start_time, end_time,

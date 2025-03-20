@@ -19,5 +19,7 @@ This function calculates the average sigma values based on stability class and t
              It reports the averages of the sigma values dependent on the inputs.
 }
 \examples{
+\dontrun{
 compute.sigma.vals(A, 0.7)
+}
 }

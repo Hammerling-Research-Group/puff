@@ -46,3 +46,16 @@ This function generates a 2D animated heatmap using `plotly` to visualize the
 movement of a plume over time. The animation is based on grid concentration data
 from `simulate_grid_mode()` output.
 }
+\examples{
+\dontrun{
+grid_concentrations <- array(...)  # 3D concentration array
+grid_coords <- list(x = ..., y = ..., z = ...)
+
+plot_2d_animated(data = grid_concentrations,
+  grid_coords = grid_coords,
+  start = "2025-01-01 00:00:00",
+  end = "2025-01-01 01:00:00",
+  output_dt = "1 min"
+  )
+}
+}

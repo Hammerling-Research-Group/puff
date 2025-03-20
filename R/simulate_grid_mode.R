@@ -24,6 +24,43 @@
 #'
 #' @return An array of methane concentrations at every grid point over time
 #'
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' sim_dt <- 4
+#' puff_dt <- 4
+#' output_dt <- 60
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' source_coords <- c(0, 0, 2.5)
+#' emission_rate <- 3.5
+#'
+#' fake_times <- seq(0, 10, length.out = 61)
+#' wind_speeds <- rep(3, 61)
+#' wind_data <- data.frame(
+#'  wind_u = runif(3601, min = -3, max = 0.7),
+#'  wind_v = runif(3601, min = -3, max = 1.5)
+#' )
+#'
+#' grid_coords <- list(
+#'   x = seq(-5, 5, by = 1),
+#'   y = seq(-5, 5, by = 1),
+#'   z = c(2.5)
+#' )
+#'
+#' grid_concentrations_original <- simulate_grid_mode(
+#'     sim_dt = sim_dt,
+#'     puff_dt = puff_dt,
+#'     output_dt = output_dt,
+#'     start_time = start_time,
+#'     end_time = end_time,
+#'     source_coords = source_coords,
+#'     emission_rate = emission_rate,
+#'     wind_data = wind_data,
+#'     grid_coords = grid_coords,
+#'     puff_duration = 1200
+#' )
+#' }
 #' @export
 simulate_grid_mode <- function(sim_dt, puff_dt, output_dt,
                                start_time, end_time,

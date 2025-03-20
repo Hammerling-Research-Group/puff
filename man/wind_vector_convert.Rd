@@ -19,5 +19,7 @@ Quantities corresponding to the conversion direction
 This function converts between coordinate systems by changing from degrees to radians
 }
 \examples{
+\dontrun{
 wind_vector_convert(speed_vec,direction_vec)
+}
 }

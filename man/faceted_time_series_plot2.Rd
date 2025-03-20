@@ -18,6 +18,8 @@ faceted_time_series_plot2(
 which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
 for the sensor concentration values.}
 
+\item{sensor_coords}{A data frame or matrix containing sensor locations.}
+
 \item{wind_data}{A list containing wind data with components u and v}
 
 \item{start_time}{POSIXct. Start time of the simulation.}
@@ -31,4 +33,20 @@ A ggplot object with faceted time series plots of methane concentrations and win
 }
 \description{
 Alternate version with wind rose at each time step + scatter plot of methane concentration time series
+}
+\examples{
+\dontrun{
+# Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
+output_dt <- 60
+start_time <- as.POSIXct("2024-01-01 12:00:00")
+end_time <- as.POSIXct("2024-01-01 13:00:00")
+wind_data <- list(
+  wind_u = runif(3601, min = -3, max = 0.7),
+  wind_v = runif(3601, min = -3, max = 1.5)
+  )
+
+faceted_time_series_plot2(sensor_concentrations, sensor_coords,
+wind_data, start_time, end_time, output_dt
+)
+}
 }

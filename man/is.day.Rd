@@ -16,5 +16,7 @@ A character T or F representing whether or not it is daytime.
 This function checks the time and classifies it as day or not
 }
 \examples{
+\dontrun{
 is.day(8)
+}
 }

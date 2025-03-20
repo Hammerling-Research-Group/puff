@@ -37,5 +37,7 @@ This function uses wind speed and direction components, advection adjustments, a
   accurately measure the dispersion of a puff in the atmosphere.
 }
 \examples{
+\dontrun{
 gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+}
 }

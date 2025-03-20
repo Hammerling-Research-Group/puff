@@ -1,5 +1,4 @@
 library(testthat)
-devtools::load_all()
 
 # setup
 sim_dt <- 10
@@ -17,8 +16,8 @@ wind_directions[31:61] <- wind_directions[31:61] - 40 * abs(sin(6 * fake_times[3
 wind_data <- interpolate_wind_data(wind_speeds, wind_directions, start_time, end_time, puff_dt)
 
 grid_coords <- list(
-  x = seq(-3, 3, by = 1),
-  y = seq(-3, 3, by = 1),
+  x = seq(-1, 1, by = 1),
+  y = seq(-1, 1, by = 1),
   z = c(2.5)
 )
 

@@ -22,7 +22,7 @@ precomputed sensor data (e.g., from `simulate_sensor_mode()`).
 }
 \examples{
 \dontrun{
-# Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
+# Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
 
 sensor_coords <- matrix(c(10, 0, 0), ncol = 3)
 single_emission_rate_plot(sensor_concentrations, sensor_coords)

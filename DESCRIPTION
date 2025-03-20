@@ -1,5 +1,5 @@
 Package: puff
-Title: Simulate, Run, and Visualize the Gaussian Puff Forward Atmospheric Model
+Title: Simulate and Visualize the Gaussian Puff Forward Atmospheric Model
 Version: 0.1.0
 Authors@R: 
     c(
@@ -22,7 +22,13 @@ Imports:
     ggplot2,
     dplyr,
     tidyr,
-    magrittr
+    magrittr,
+    akima,
+    htmlwidgets,
+    patchwork,
+    plotly,
+    scales,
+    stringr
 Suggests: 
     knitr,
     rmarkdown,

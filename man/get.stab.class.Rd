@@ -19,5 +19,7 @@ This function calculates the stability class based on wind speed (U) and the tim
              It categorizes the atmosphere's stability as one of several classes (A-F) depending on the inputs.
 }
 \examples{
-get.stab.class(3, 12
+\dontrun{
+get.stab.class(3, 12)
+}
 }

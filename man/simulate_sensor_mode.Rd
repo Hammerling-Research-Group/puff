@@ -68,5 +68,4 @@ The simulation emits puffs from the specified source at intervals of \code{puff_
     emission_rate, wind_data, sensor_coords, puff_duration
   )
 }
-
 }

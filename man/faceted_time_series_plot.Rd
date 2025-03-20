@@ -18,6 +18,8 @@ faceted_time_series_plot(
 which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
 for the sensor concentration values.}
 
+\item{sensor_coords}{A data frame or matrix containing sensor locations.}
+
 \item{wind_data}{A list containing wind data with components u and v}
 
 \item{start_time}{POSIXct. Start time of the simulation.}
@@ -34,7 +36,7 @@ This function creates a faceted plot showing methane concentrations along with w
 }
 \examples{
 \dontrun{
-# Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
+# Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
 output_dt <- 60
 start_time <- as.POSIXct("2024-01-01 12:00:00")
 end_time <- as.POSIXct("2024-01-01 13:00:00")
