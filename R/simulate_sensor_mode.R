@@ -40,15 +40,16 @@
 #'   end_time <- "2024-01-01 13:00:00"
 #'   source_coords <- c(0, 0, 2.5)
 #'   emission_rate <- 3.5
-#'   wind_data <- list(
+#'   wind_data <- data.frame(
 #'     wind_u = runif(3601, min = -3, max = 0.7),
 #'     wind_v = runif(3601, min = -3, max = 1.5)
 #'   )
+#'
 #'   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 #'
 #'   simulate_sensor_mode(
 #'     sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-#'     emission_rate, wind_data, sensor_coords, puff_duration
+#'     emission_rate, wind_data, sensor_coords, puff_duration = 1200
 #'   )
 #' }
 #' @export

@@ -2,29 +2,33 @@
 % Please edit documentation in R/plots.R
 \name{single_emission_rate_plot}
 \alias{single_emission_rate_plot}
-\title{Plot Single Emission Rate Sensor Concentrations}
+\title{Plot Multiple Emission Rate Sensor Concentrations}
 \usage{
 single_emission_rate_plot(sensor_concentrations, sensor_coords)
 }
 \arguments{
 \item{sensor_concentrations}{Data frame. Output from a sensor simulation function,
-which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
-for the sensor concentration values.}
+which must include a column named "Group.1" for timestamps and one or more columns
+named "Sensor_1", "Sensor_2", etc., for the sensor concentration values.}
 
-\item{sensor_coords}{Numeric vector. Coordinates (x, y, z) of the sensor.}
+\item{sensor_coords}{Numeric vector or matrix. Coordinates (x, y, z) of the sensor(s).}
 }
 \value{
-A ggplot object showing sensor concentrations over time.
+A ggplot object showing sensor concentrations over time, faceted by sensor.
 }
 \description{
-This function generates a plot of sensor concentrations over time using
-precomputed sensor data (e.g., from `simulate_sensor_mode()`).
+This function generates a faceted (if multiple sensors) bubble plot of sensor concentrations over time
+using precomputed sensor data (e.g., from `simulate_sensor_mode()`).
 }
 \examples{
 \dontrun{
 # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
 
-sensor_coords <- matrix(c(10, 0, 0), ncol = 3)
+sensor_coords <- matrix(c(
+  -6.525403221327715e-15, -35.52264, 2.01775,
+  -2.15, -33.52264, 2
+ ), ncol = 3, byrow = TRUE)
+
 single_emission_rate_plot(sensor_concentrations, sensor_coords)
 }
 }

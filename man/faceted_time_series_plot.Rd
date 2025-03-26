@@ -14,25 +14,23 @@ faceted_time_series_plot(
 )
 }
 \arguments{
-\item{sensor_concentrations}{Data frame. Output from a sensor simulation function,
-which must include a column named "Group.1" which contains the timestamps (e.g., "YYYY-MM-DD HH:MM:SS") and a column "Sensor_1"
-for the sensor concentration values.}
+\item{sensor_concentrations}{Data frame. Output from simulate_sensor_mode().}
 
 \item{sensor_coords}{A data frame or matrix containing sensor locations.}
 
-\item{wind_data}{A list containing wind data with components u and v}
+\item{wind_data}{A list with wind_u and wind_v components.}
 
-\item{start_time}{POSIXct. Start time of the simulation.}
+\item{start_time}{POSIXct start of simulation.}
 
-\item{end_time}{POSIXct. End time of the simulation.}
+\item{end_time}{POSIXct end of simulation.}
 
-\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
+\item{output_dt}{Time step (in seconds) for aligning wind data with concentration data.}
 }
 \value{
-A ggplot object with faceted time series plots of methane concentrations and wind data.
+A ggplot object: faceted concentration plot + single wind rose plot.
 }
 \description{
-This function creates a faceted plot showing methane concentrations along with wind data over time.
+This function creates a faceted bubble plot of methane concentrations and a shared wind rose plot.
 }
 \examples{
 \dontrun{
@@ -45,6 +43,13 @@ wind_data <- list(
   wind_v = runif(3601, min = -3, max = 1.5)
   )
 
-faceted_time_series_plot(sensor_concentrations, wind_data, start_time, end_time, output_dt)
+sensor_coords <- matrix(c(
+-6.525403221327715e-15, -35.52264, 2.01775,
+-2.15, -33.52264, 2
+), ncol = 3, byrow = TRUE)
+
+faceted_time_series_plot(sensor_concentrations, sensor_coords,
+wind_data, start_time, end_time, output_dt
+)
 }
 }
