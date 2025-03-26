@@ -5,6 +5,8 @@ Authors@R:
     c(
     person("Teagan", "Ward", email = "teaganward@mines.edu", role = "aut"),
     person("Philip", "Waggoner", email = "philip.waggoner@mines.edu", role = c("aut", "cre")),
+    person("Will", "Daniels", email = "wdaniels@mines.edu", role = c("aut")),
+    person("Meng", "Jia", email = "mjia@mines.edu", role = c("aut")),
     person("Dorit", "Hammerling", email = "hammerling@mines.edu", role = c("aut", "ths"))
     )
 Description: Simulate and run the Gaussian puff forward atmospheric
