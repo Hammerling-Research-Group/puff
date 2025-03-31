@@ -1,21 +1,21 @@
 #' @title Determine Whether a Time is During the Day
 #' @description This function checks the time and classifies it as day or not
-#' @usage is.day(time)
+#' @usage is_day(time)
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character T or F representing whether or not it is daytime.
 #' @examples
 #' \dontrun{
-#' is.day(8)
+#' is_day(8)
 #' }
 #' @export
-is.day <- function(time){
+is_day <- function(time){
   # function to check if a time is during the day
   # will be used to assign stability class in forward model
   # NOTE: times currently set to work in summer, future work will make this
   # more flexible.
-  time.hour <- as.numeric(format(time, format = "%H"))
+  time_hour <- as.numeric(format(time, format = "%H"))
 
-  if (time.hour >= 7 & time.hour <= 18){
+  if (time_hour >= 7 & time_hour <= 18){
     return(T)
   } else {
     return(F)
@@ -25,16 +25,16 @@ is.day <- function(time){
 #' @title Determine Stability Class Based on Wind Speed and Time of Day
 #' @description This function calculates the stability class based on wind speed (U) and the time of day.
 #'              It categorizes the atmosphere's stability as one of several classes (A-F) depending on the inputs.
-#' @usage get.stab.class(U, time)
+#' @usage get_stab_class(U, time)
 #' @param U A numeric value representing the wind speed in meters per second.
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character vector representing the stability class(es) ("A" to "F").
 #' @examples
 #' \dontrun{
-#' get.stab.class(3, 12)
+#' get_stab_class(3, 12)
 #' }
 #' @export
-get.stab.class <- function(U, time){
+get_stab_class <- function(U, time){
 
   # chk if U is missing or NA
   if (is.na(U) || is.null(U)) {
@@ -49,74 +49,74 @@ get.stab.class <- function(U, time){
 
   # Determine stability class based on wind speed and time of day
   if (U < 2){
-    stab.class <- ifelse(is.day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
+    stab_class <- ifelse(is_day(time), list(c("A", "B")), list(c("E", "F")))[[1]]
   } else if (U >= 2 & U < 3){
-    stab.class <- ifelse(is.day(time), list(c("B")),      list(c("E", "F")))[[1]]
+    stab_class <- ifelse(is_day(time), list(c("B")),      list(c("E", "F")))[[1]]
   } else if (U >= 3 & U < 5){
-    stab.class <- ifelse(is.day(time), list(c("B", "C")), list(c("D", "E")))[[1]]
+    stab_class <- ifelse(is_day(time), list(c("B", "C")), list(c("D", "E")))[[1]]
   } else if (U >= 5 & U < 6){
-    stab.class <- ifelse(is.day(time), list(c("C", "D")), list(c("D")))[[1]]
+    stab_class <- ifelse(is_day(time), list(c("C", "D")), list(c("D")))[[1]]
   } else {
-    stab.class <- ifelse(is.day(time), list(c("D")),      list(c("D")))[[1]]
+    stab_class <- ifelse(is_day(time), list(c("D")),      list(c("D")))[[1]]
   }
 
-  return(stab.class)
+  return(stab_class)
 
 }
 
 #' @title Find Average Sigma Values Based On Stability Class and Total Distance Traveled
 #' @description This function calculates the average sigma values based on stability class and the total distance traveled.
 #'              It reports the averages of the sigma values dependent on the inputs.
-#' @usage compute.sigma.vals(stab.class, total.dist)
-#' @param stab.class A character vector representing the stability class(es) ("A" to "F").
-#' @param total.dist A numeric value representing the distance traveled in --units--.
+#' @usage compute_sigma_vals(stab_class, total_dist)
+#' @param stab_class A character vector representing the stability class(es) ("A" to "F").
+#' @param total_dist A numeric value representing the distance traveled in meters (m).
 #' @return A numeric vector representing the average sigma values over the stability classes passed to the function.
 #' @examples
 #' \dontrun{
-#' compute.sigma.vals(A, 0.7)
+#' compute_sigma_vals(A, 0.7)
 #' }
 #' @export
-compute.sigma.vals <- function(stab.class, total.dist){
+compute_sigma_vals <- function(stab_class, total_dist){
 
-  # chk: invalid total.dist
-  if (is.na(total.dist) || is.null(total.dist)) {
-    warning("Total distance (total.dist) is NA or NULL. Assigning sigma values as NA.")
+  # chk: invalid total_dist
+  if (is.na(total_dist) || is.null(total_dist)) {
+    warning("Total distance (total_dist) is NA or NULL. Assigning sigma values as NA.")
     return(c(NA, NA))
   }
 
-  if (!is.numeric(total.dist)) {
-    stop("Total distance (total.dist) must be numeric.")
+  if (!is.numeric(total_dist)) {
+    stop("Total distance (total_dist) must be numeric.")
   }
 
-  n.stab.class <- length(stab.class)
+  n.stab_class <- length(stab_class)
 
-  sigma.y.vals <- sigma.z.vals <- vector(length = n.stab.class)
+  sigma.y.vals <- sigma.z.vals <- vector(length = n.stab_class)
 
   # Loop through stability classes and get a, b, c, and d parameter values
   # based on the stability class and total distance traveled.
-  for (stab.class.it in 1:n.stab.class){
+  for (stab_class.it in 1:n.stab_class){
 
-    if (stab.class[stab.class.it] == "A"){
+    if (stab_class[stab_class.it] == "A"){
 
-      if (total.dist <= 0.1){
+      if (total_dist <= 0.1){
         a <- 122.8
         b <- 0.9447
-      } else if (total.dist <= 0.15){
+      } else if (total_dist <= 0.15){
         a <- 158.08
         b <- 1.0542
-      } else if (total.dist <= 0.20){
+      } else if (total_dist <= 0.20){
         a <- 170.22
         b <- 1.0932
-      } else if (total.dist <= 0.25){
+      } else if (total_dist <= 0.25){
         a <- 179.52
         b <- 1.1262
-      } else if (total.dist <= 0.3){
+      } else if (total_dist <= 0.3){
         a <- 217.41
         b <- 1.2644
-      } else if (total.dist <= 0.4){
+      } else if (total_dist <= 0.4){
         a <- 258.89
         b <- 1.4094
-      } else if (total.dist <= 0.5){
+      } else if (total_dist <= 0.5){
         a <- 346.75
         b <- 1.7283
       } else {
@@ -127,12 +127,12 @@ compute.sigma.vals <- function(stab.class, total.dist){
       c <- 24.1670
       d <- 2.5334
 
-    } else if (stab.class[stab.class.it] == "B"){
+    } else if (stab_class[stab_class.it] == "B"){
 
-      if (total.dist <= 0.2){
+      if (total_dist <= 0.2){
         a <- 90.673
         b <- 0.93198
-      } else if (total.dist <= 0.4){
+      } else if (total_dist <= 0.4){
         a <- 98.483
         b <- 0.98332
       } else {
@@ -143,28 +143,28 @@ compute.sigma.vals <- function(stab.class, total.dist){
       c <- 18.333
       d <- 1.8096
 
-    } else if (stab.class[stab.class.it] == "C"){
+    } else if (stab_class[stab_class.it] == "C"){
 
       a <- 61.141
       b <- 0.91465
       c <- 12.5
       d <- 1.0857
 
-    } else if (stab.class[stab.class.it] == "D"){
+    } else if (stab_class[stab_class.it] == "D"){
 
-      if (total.dist <= 0.3){
+      if (total_dist <= 0.3){
         a <- 34.459
         b <- 0.86974
-      } else if (total.dist <= 1){
+      } else if (total_dist <= 1){
         a <- 32.093
         b <- 0.81066
-      } else if (total.dist <= 3){
+      } else if (total_dist <= 3){
         a <- 32.093
         b <- 0.64403
-      } else if (total.dist <= 10){
+      } else if (total_dist <= 10){
         a <- 33.504
         b <- 0.60486
-      } else if (total.dist <= 30){
+      } else if (total_dist <= 30){
         a <- 36.65
         b <- 0.56589
       } else {
@@ -175,30 +175,30 @@ compute.sigma.vals <- function(stab.class, total.dist){
       c <- 8.333
       d <- 0.72382
 
-    } else if (stab.class[stab.class.it] == "E"){
+    } else if (stab_class[stab_class.it] == "E"){
 
-      if (total.dist <= 0.1){
+      if (total_dist <= 0.1){
         a <- 24.260
         b <- 0.83660
-      } else if (total.dist <= 0.3){
+      } else if (total_dist <= 0.3){
         a <- 23.331
         b <- 0.81956
-      } else if (total.dist <= 1){
+      } else if (total_dist <= 1){
         a <- 21.628
         b <- 0.75660
-      } else if (total.dist <= 2){
+      } else if (total_dist <= 2){
         a <- 21.628
         b <- 0.63077
-      } else if (total.dist <= 4){
+      } else if (total_dist <= 4){
         a <- 22.534
         b <- 0.57154
-      } else if (total.dist <= 10){
+      } else if (total_dist <= 10){
         a <- 24.703
         b <- 0.50527
-      } else if (total.dist <= 20){
+      } else if (total_dist <= 20){
         a <- 26.970
         b <- 0.46713
-      } else if (total.dist <= 40){
+      } else if (total_dist <= 40){
         a <- 35.420
         b <- 0.37615
       } else {
@@ -209,33 +209,33 @@ compute.sigma.vals <- function(stab.class, total.dist){
       c <- 6.25
       d <- 0.54287
 
-    } else if (stab.class[stab.class.it] == "F"){
+    } else if (stab_class[stab_class.it] == "F"){
 
-      if (total.dist <= 0.2){
+      if (total_dist <= 0.2){
         a <- 15.209
         b <- 0.81558
-      } else if (total.dist <= 0.7) {
+      } else if (total_dist <= 0.7) {
         a <- 14.457
         b <- 0.78407
-      } else if (total.dist <= 1){
+      } else if (total_dist <= 1){
         a <- 13.953
         b <- 0.68465
-      } else if (total.dist <= 2){
+      } else if (total_dist <= 2){
         a <- 13.953
         b <- 0.63227
-      } else if (total.dist <= 3){
+      } else if (total_dist <= 3){
         a <- 14.823
         b <- 0.54503
-      } else if (total.dist <= 7){
+      } else if (total_dist <= 7){
         a <- 16.187
         b <- 0.46490
-      } else if (total.dist <= 15){
+      } else if (total_dist <= 15){
         a <- 17.836
         b <- 0.41507
-      } else if (total.dist <= 30){
+      } else if (total_dist <= 30){
         a <- 22.651
         b <- 0.32681
-      } else if (total.dist <= 60){
+      } else if (total_dist <= 60){
         a <- 27.074
         b <- 0.27436
       } else {
@@ -250,17 +250,17 @@ compute.sigma.vals <- function(stab.class, total.dist){
     # If the puff has moved, get sigma values.
     # If total distance = 0, then the puff has just been initialized and should
     # not contribute to the overall concentration.
-    if (total.dist > 0){
+    if (total_dist > 0){
 
-      big.theta <- 0.017453293 * (c - d * log(total.dist))
-      sigma.y.vals[stab.class.it] <- 465.11628 * total.dist * tan(big.theta)
+      big.theta <- 0.017453293 * (c - d * log(total_dist))
+      sigma.y.vals[stab_class.it] <- 465.11628 * total_dist * tan(big.theta)
 
-      sigma.z <- a * (total.dist)^b
-      sigma.z.vals[stab.class.it] <- ifelse(sigma.z > 5000, 5000, sigma.z)
+      sigma.z <- a * (total_dist)^b
+      sigma.z.vals[stab_class.it] <- ifelse(sigma.z > 5000, 5000, sigma.z)
 
     } else {
 
-      sigma.y.vals[stab.class.it] <- sigma.z.vals[stab.class.it] <- NA
+      sigma.y.vals[stab_class.it] <- sigma.z.vals[stab_class.it] <- NA
     }
 
   }
@@ -337,47 +337,47 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' This function uses wind speed and direction components, advection adjustments, and stability class calculations to
 #'   accurately measure the dispersion of a puff in the atmosphere.
 #'
-#' @usage gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+#' @usage gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
 #'
 #' @param Q Numeric. Mass per puff. E.g., for 100 puffs/hour of a 100 kg/hr emission, put 1 kg of mass into each puff.
-#' @param stab.class Character vector. Stability class ("A" to "F").
-#' @param x.p Numeric. Puff position in the X direction.
-#' @param y.p Numeric. Puff position in the Y direction.
-#' @param x.r.vec Numeric. The x-coordinate (east-west) where the concentration is calculated.
-#' @param y.r.vec Numeric. The y-coordinate (north-south) where the concentration is calculated.
-#' @param z.r.vec Numeric. The z-coordinate (height) where the concentration is calculated.
-#' @param total.dist Numeric. The total distance the puff has traveled from the source in m.
+#' @param stab_class Character vector. Stability class ("A" to "F").
+#' @param x_p Numeric. Puff position in the X direction.
+#' @param y_p Numeric. Puff position in the Y direction.
+#' @param x_r_vec Numeric. The x-coordinate (east-west) where the concentration is calculated.
+#' @param y_r_vec Numeric. The y-coordinate (north-south) where the concentration is calculated.
+#' @param z_r_vec Numeric. The z-coordinate (height) where the concentration is calculated.
+#' @param total_dist Numeric. The total distance the puff has traveled from the source in m.
 #' @param H Numeric. Source height.
 #' @param U Numeric. Wind speed in m/s.
 #'
 #' @return Numeric. Pollutant concentration at the specified (x, y, z) locations and time `t`.
 #' @examples
 #' \dontrun{
-#' gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+#' gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
 #' }
 #' @export
-gpuff <- function(Q, stab.class,
-                  x.p, y.p,
-                  x.r.vec, y.r.vec, z.r.vec,
-                  total.dist,
+gpuff <- function(Q, stab_class,
+                  x_p, y_p,
+                  x_r_vec, y_r_vec, z_r_vec,
+                  total_dist,
                   H, U){
 
   # converts kg/m^3 to ppm of METHANE
   conversion.factor <- (1e6) * (1.524)
 
   # Convert total distance from m to km for stability class stuff
-  total.dist <- total.dist / 1000
+  total_dist <- total_dist / 1000
 
   # Get sigma values for the stability classes passed to this function.
-  sigma.vec <- compute.sigma.vals(stab.class, total.dist)
+  sigma.vec <- compute_sigma_vals(stab_class, total_dist)
 
   sigma.y <- sigma.vec[1]
   sigma.z <- sigma.vec[2]
 
   # Calculate the contaminant concentration (kg/m^3) using Gaussian puff model
   C  = (Q / ( (2*pi)^(3/2) * sigma.y^2 * sigma.z )) *
-    exp( -0.5 * ( (x.r.vec - x.p)^2 + (y.r.vec - y.p)^2 ) / sigma.y^2) *
-    ( exp( -0.5*(z.r.vec - H)^2/sigma.z^2 ) + exp( -0.5*(z.r.vec + H)^2 / sigma.z^2 ) )
+    exp( -0.5 * ( (x_r_vec - x_p)^2 + (y_r_vec - y_p)^2 ) / sigma.y^2) *
+    ( exp( -0.5*(z_r_vec - H)^2/sigma.z^2 ) + exp( -0.5*(z_r_vec + H)^2 / sigma.z^2 ) )
 
   # Convert from kg/m^3 to ppm
   C <- C*conversion.factor
