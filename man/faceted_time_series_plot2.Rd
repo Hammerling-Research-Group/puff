@@ -10,7 +10,8 @@ faceted_time_series_plot2(
   wind_data,
   start_time,
   end_time,
-  output_dt
+  output_dt,
+  text_size = 12
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ for the sensor concentration values.}
 \item{end_time}{POSIXct. End time of the simulation.}
 
 \item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
+
+\item{text_size}{Default at 12.}
 }
 \value{
 A ggplot object with faceted time series plots of methane concentrations and wind rose data.

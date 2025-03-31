@@ -4,24 +4,35 @@
 \alias{create_site_map}
 \title{Create a Site Map of Sensors and Sources}
 \usage{
-create_site_map(sensors, sources)
+create_site_map(sensors, sources, text_size = 12)
 }
 \arguments{
-\item{sensors}{Coordinates for sensor locations. Any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.}
+\item{sensors}{Coordinates for sensor locations.}
 
-\item{sources}{Coordinates for source locations. As with \code{sensors}, any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.}
+\item{sources}{Coordinates for source locations.}
+
+\item{text_size}{Numeric. Font size for labels. Default is 12.}
 }
 \value{
-A ggplot object showing a site map of sensors (O) and sources (X).
+A patchwork-combined ggplot object: site map + compass rose.
 }
 \description{
-This function generates a simple site map showing the locations of sensors and sources.
-It accepts any object that can be coerced into x-y coordinate pairs (e.g., vectors, matrices, data frames).
+This function generates a site map with an adjacent compass rose.
 }
 \examples{
 \dontrun{
 source_coords <- c(0, 0, 2.5)
-sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+
+n_sensors <- 8
+radius <- 20
+z_height <- 2.0
+
+angles <- seq(0, 2 * pi, length.out = n_sensors + 1)[- (n_sensors + 1)]
+
+sensor_coords <- matrix(
+  cbind(radius * cos(angles), radius * sin(angles), rep(z_height, n_sensors)),
+  ncol = 3
+)
 
 create_site_map(sensor_coords, source_coords)
 }

@@ -10,7 +10,8 @@ faceted_time_series_plot(
   wind_data,
   start_time,
   end_time,
-  output_dt
+  output_dt,
+  text_size = 12
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ faceted_time_series_plot(
 \item{end_time}{POSIXct end of simulation.}
 
 \item{output_dt}{Time step (in seconds) for aligning wind data with concentration data.}
+
+\item{text_size}{Default at 12.}
 }
 \value{
 A ggplot object: faceted concentration plot + single wind rose plot.

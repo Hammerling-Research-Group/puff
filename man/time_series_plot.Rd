@@ -4,7 +4,7 @@
 \alias{time_series_plot}
 \title{Plot Time Series of Sensor Concentrations}
 \usage{
-time_series_plot(sensor_concentrations)
+time_series_plot(sensor_concentrations, text_size = 12)
 }
 \arguments{
 \item{sensor_concentrations}{A data frame (or matrix) containing the output from
@@ -13,6 +13,8 @@ the sensor simulation function (e.g., `simulate_sensor_mode()`). It must include
   \item{Group.1}{A character vector of timestamps in the format `"YYYY-MM-DD HH:MM:SS"`.}
   \item{Sensor_1}{A numeric vector of sensor concentration values corresponding to each timestamp.}
 }}
+
+\item{text_size}{Default at 12.}
 }
 \value{
 A ggplot object showing the time series of sensor concentrations.

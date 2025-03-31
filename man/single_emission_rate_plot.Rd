@@ -4,7 +4,7 @@
 \alias{single_emission_rate_plot}
 \title{Plot Multiple Emission Rate Sensor Concentrations}
 \usage{
-single_emission_rate_plot(sensor_concentrations, sensor_coords)
+single_emission_rate_plot(sensor_concentrations, sensor_coords, text_size = 12)
 }
 \arguments{
 \item{sensor_concentrations}{Data frame. Output from a sensor simulation function,
@@ -12,6 +12,8 @@ which must include a column named "Group.1" for timestamps and one or more colum
 named "Sensor_1", "Sensor_2", etc., for the sensor concentration values.}
 
 \item{sensor_coords}{Numeric vector or matrix. Coordinates (x, y, z) of the sensor(s).}
+
+\item{text_size}{Default at 12.}
 }
 \value{
 A ggplot object showing sensor concentrations over time, faceted by sensor.

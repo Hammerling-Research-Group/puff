@@ -349,6 +349,7 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #'   which must include a column named "Group.1" for timestamps and one or more columns
 #'   named "Sensor_1", "Sensor_2", etc., for the sensor concentration values.
 #' @param sensor_coords Numeric vector or matrix. Coordinates (x, y, z) of the sensor(s).
+#' @param text_size Default at 12.
 #'
 #' @return A ggplot object showing sensor concentrations over time, faceted by sensor.
 #'
@@ -364,7 +365,7 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #' single_emission_rate_plot(sensor_concentrations, sensor_coords)
 #' }
 #' @export
-single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
+single_emission_rate_plot <- function(sensor_concentrations, sensor_coords, text_size = 12) {
 
   if (!is.data.frame(sensor_concentrations)) stop("sensor_concentrations must be a data frame.")
   if (nrow(sensor_concentrations) == 0) stop("sensor_concentrations is empty.")
@@ -414,15 +415,18 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
       guide = "legend"
     ) +
     ggplot2::labs(
-      title = "Sensor Concentrations Over Time",
+      title = "Sensor Concentrations (ppm) Over Time",
       x = "Time",
       y = "Concentration (ppm)",
-      color = "Concentration",
-      size = "Concentration"
+      color = "Concentration (ppm)",
+      size = "Concentration (ppm)"
     ) +
     ggplot2::facet_wrap(~ sensor) +
     ggplot2::theme_bw() +
-    ggplot2::theme(legend.position = "right")
+    ggplot2::theme(
+      legend.position = "right",
+      text = ggplot2::element_text(size = text_size)
+    )
 
   return(plot)
 }
@@ -438,6 +442,7 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 #'     \item{Group.1}{A character vector of timestamps in the format `"YYYY-MM-DD HH:MM:SS"`.}
 #'     \item{Sensor_1}{A numeric vector of sensor concentration values corresponding to each timestamp.}
 #'   }
+#' @param text_size Default at 12.
 #'
 #' @return A ggplot object showing the time series of sensor concentrations.
 #'
@@ -447,7 +452,7 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 #' time_series_plot(sensor_concentrations)
 #' }
 #' @export
-time_series_plot <- function(sensor_concentrations) {
+time_series_plot <- function(sensor_concentrations, text_size = 12) {
 
   if (!is.data.frame(sensor_concentrations) && !is.matrix(sensor_concentrations)) {
     stop("sensor_concentrations must be a data.frame or matrix.")
@@ -485,17 +490,16 @@ time_series_plot <- function(sensor_concentrations) {
     dplyr::rename(time = Group.1)
 
   sensor_long |>
-    #dplyr::mutate(Sensor = stringr::str_replace(Sensor, "Sensor_1", "Test Sensor")) |>
     ggplot2::ggplot(ggplot2::aes(x = time2, y = Concentration, group = Sensor)) +
     ggplot2::geom_line() +
     ggplot2::facet_wrap(~ Sensor) +
     ggplot2::labs(
-      title = "Sensor Concentrations Over Time",
-      subtitle = "With Time Steps",
-      x = "Time from emission start (min)",
-      y = "Concentration"
+      title = "Sensor Concentrations (ppm) Over Time",
+      x = "Time from start",
+      y = "Concentration (ppm)"
     ) +
-    ggplot2::theme_bw()
+    ggplot2::theme_bw() +
+    ggplot2::theme(text = ggplot2::element_text(size = text_size))
 }
 
 
@@ -509,6 +513,7 @@ time_series_plot <- function(sensor_concentrations) {
 #' @param output_dt Time step (in seconds) for aligning wind data with concentration data.
 #' @param start_time POSIXct start of simulation.
 #' @param end_time POSIXct end of simulation.
+#' @param text_size Default at 12.
 #'
 #' @return A ggplot object: faceted concentration plot + single wind rose plot.
 #'
@@ -538,7 +543,8 @@ faceted_time_series_plot <- function(sensor_concentrations,
                                      wind_data,
                                      start_time,
                                      end_time,
-                                     output_dt) {
+                                     output_dt,
+                                     text_size = 12) {
 
   for (pkg in c("dplyr", "tidyr", "ggplot2", "scales", "patchwork")) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -580,13 +586,14 @@ faceted_time_series_plot <- function(sensor_concentrations,
     ) +
     ggplot2::facet_wrap(~ sensor) +
     ggplot2::labs(
-      title = "Sensor Concentrations Over Time",
-      x = "Time",
+      title = "Sensor Concentrations (ppm) Over Time",
+      x = "Time from start",
       y = "Concentration (ppm)",
       color = "Concentration (ppm)",
       size = "Concentration (ppm)"
     ) +
-    ggplot2::theme_bw()
+    ggplot2::theme_bw() +
+    ggplot2::theme(text = ggplot2::element_text(size = text_size))
 
   # Panel 2: Wind Rose
   if (!inherits(start_time, "POSIXct")) {
@@ -609,11 +616,11 @@ faceted_time_series_plot <- function(sensor_concentrations,
       wind_speed = sqrt(wind_u^2 + wind_v^2),
       angle = atan2(wind_v, wind_u) * (180 / pi),
       direction = dplyr::case_when(
-        angle >= -22.5 & angle < 22.5  ~ "E",
-        angle >= 22.5 & angle < 67.5   ~ "NE",
-        angle >= 67.5 & angle < 112.5  ~ "N",
-        angle >= 112.5 & angle < 157.5 ~ "NW",
-        angle >= -67.5 & angle < -22.5 ~ "SE",
+        angle >= -22.5 & angle < 22.5   ~ "E",
+        angle >= 22.5 & angle < 67.5    ~ "NE",
+        angle >= 67.5 & angle < 112.5   ~ "N",
+        angle >= 112.5 & angle < 157.5  ~ "NW",
+        angle >= -67.5 & angle < -22.5  ~ "SE",
         angle >= -112.5 & angle < -67.5 ~ "S",
         angle >= -157.5 & angle < -112.5 ~ "SW",
         TRUE ~ "W"
@@ -622,20 +629,40 @@ faceted_time_series_plot <- function(sensor_concentrations,
 
   wind_rose_data <- wind_df |>
     dplyr::group_by(direction) |>
-    dplyr::summarise(mean_wind_speed = mean(wind_speed, na.rm = TRUE), .groups = "drop")
+    dplyr::summarise(
+      count = dplyr::n(),
+      mean_speed = mean(wind_speed, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    tidyr::complete(
+      direction = c("N", "NE", "E", "SE", "S", "SW", "W", "NW"),
+      fill = list(count = 0, mean_speed = 0)
+    )
 
-  p2 <- ggplot2::ggplot(wind_rose_data, ggplot2::aes(x = direction, y = mean_wind_speed)) +
-    ggplot2::geom_col() +
-    ggplot2::coord_polar(start = -0.4) +
+  # wind rose: radial bars = frequency, fill = wind speed
+  p2 <- ggplot2::ggplot(wind_rose_data, ggplot2::aes(x = direction, y = count, fill = mean_speed)) +
+    ggplot2::geom_col(color = "white", width = 1) +
+    ggplot2::coord_polar(start = -pi / 8) +  # orient N to top
     ggplot2::scale_x_discrete(limits = c("N", "NE", "E", "SE", "S", "SW", "W", "NW")) +
+    ggplot2::scale_fill_gradient(
+      name = "Avg Wind Speed (m/s)"
+    ) +
     ggplot2::labs(
       title = "Wind Conditions",
-      x = "Wind Direction",
-      y = "Avg Wind Speed (m/s)"
+      x = NULL,
+      y = NULL,
+      caption = "Radial bar height = frequency; color = average wind speed"
     ) +
-    ggplot2::theme_minimal()
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      panel.grid.major.y = ggplot2::element_line(color = "lightgray"),
+      panel.grid.minor = ggplot2::element_blank(),
+      text = ggplot2::element_text(size = text_size),
+      legend.position = "right"
+    )
 
-  # Combine
   combined_plot <- p1 / p2 +
     patchwork::plot_annotation(title = "Sensor Concentrations and Wind Conditions")
 
@@ -653,6 +680,7 @@ faceted_time_series_plot <- function(sensor_concentrations,
 #' @param output_dt Integer. Desired time resolution (in seconds) for the final output of concentrations.
 #' @param start_time POSIXct. Start time of the simulation.
 #' @param end_time POSIXct. End time of the simulation.
+#' @param text_size Default at 12.
 #'
 #' @return A ggplot object with faceted time series plots of methane concentrations and wind rose data.
 #'
@@ -677,7 +705,8 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
                                       wind_data,
                                       start_time,
                                       end_time,
-                                      output_dt) {
+                                      output_dt,
+                                      text_size = 12) {
 
   # Check required packages
   for(pkg in c("dplyr", "tidyr", "ggplot2", "scales", "patchwork")) {
@@ -747,15 +776,16 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
       guide = "legend"
     ) +
     ggplot2::labs(
-      title = "Sensor Concentrations",
-      x = "Time",
+      title = "Sensor Concentrations (ppm)",
+      x = "Time from start",
       y = "Concentration (ppm)",
-      color = "Concentration",
-      size = "Concentration",
+      color = "Concentration (ppm)",
+      size = "Concentration (ppm)",
       caption = "Point size and color correspond to concentration levels."
     ) +
     ggplot2::theme_minimal() +
-    ggplot2::theme(legend.position = "none")
+    ggplot2::theme(legend.position = "none",
+                   text = ggplot2::element_text(size = text_size))
 
   #############################
   ##  Panel 2: Wind Rose Plot ##
@@ -823,7 +853,8 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
       axis.text.y = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank(),
       panel.grid.major = ggplot2::element_blank(),
-      panel.grid.minor = ggplot2::element_blank()
+      panel.grid.minor = ggplot2::element_blank(),
+      text = ggplot2::element_text(size = text_size)
     )
 
 
@@ -838,42 +869,50 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
 
 }
 
+
 #' Create a Site Map of Sensors and Sources
 #'
-#' This function generates a simple site map showing the locations of sensors and sources.
-#' It accepts any object that can be coerced into x-y coordinate pairs (e.g., vectors, matrices, data frames).
+#' This function generates a site map with an adjacent compass rose.
 #'
-#' @param sensors Coordinates for sensor locations. Any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.
-#' @param sources Coordinates for source locations. As with \code{sensors}, any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.
+#' @param sensors Coordinates for sensor locations.
+#' @param sources Coordinates for source locations.
+#' @param text_size Numeric. Font size for labels. Default is 12.
 #'
-#' @return A ggplot object showing a site map of sensors (O) and sources (X).
+#' @return A patchwork-combined ggplot object: site map + compass rose.
 #'
 #' @examples
 #' \dontrun{
 #' source_coords <- c(0, 0, 2.5)
-#' sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+#'
+#' n_sensors <- 8
+#' radius <- 20
+#' z_height <- 2.0
+#'
+#' angles <- seq(0, 2 * pi, length.out = n_sensors + 1)[- (n_sensors + 1)]
+#'
+#' sensor_coords <- matrix(
+#'   cbind(radius * cos(angles), radius * sin(angles), rep(z_height, n_sensors)),
+#'   ncol = 3
+#' )
 #'
 #' create_site_map(sensor_coords, source_coords)
 #' }
 #' @export
-create_site_map <- function(sensors, sources) {
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop("The 'ggplot2' package is required but not installed.")
+create_site_map <- function(sensors, sources, text_size = 12) {
+  for (pkg in c("ggplot2", "patchwork")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      stop(sprintf("The '%s' package is required but not installed.", pkg))
+    }
   }
 
   to_xy_df <- function(obj, label) {
     if (is.numeric(obj) && is.null(dim(obj))) {
-      if (length(obj) < 2) {
-        stop(sprintf("'%s' must have at least two values to represent x and y.", label))
-      }
+      if (length(obj) < 2) stop(sprintf("'%s' must have at least two values to represent x and y.", label))
       obj <- matrix(obj[1:2], ncol = 2)
     }
 
     df <- as.data.frame(obj)
-    if (ncol(df) < 2) {
-      stop(sprintf("'%s' must have at least two columns to represent x and y coordinates.", label))
-    }
-
+    if (ncol(df) < 2) stop(sprintf("'%s' must have at least two columns to represent x and y coordinates.", label))
     df <- df[, 1:2]
     names(df) <- c("x", "y")
     df$type <- label
@@ -884,11 +923,44 @@ create_site_map <- function(sensors, sources) {
   source_df <- to_xy_df(sources, "Source")
   site_df <- rbind(sensor_df, source_df)
 
-  ggplot2::ggplot(site_df, ggplot2::aes(x = x, y = y, shape = type, color = type)) +
-    ggplot2::geom_point(size = 4, stroke = 1.5) +
-    ggplot2::scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
-    ggplot2::scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
-    ggplot2::labs(title = "Site Map", x = "Longitude", y = "Latitude") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(legend.position = "bottom")
+  site_map <- ggplot2::ggplot(site_df, ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_point(
+     ggplot2::aes(shape = factor(type), color = factor(type)),
+     size = 4, stroke = 1.5
+    ) +
+   ggplot2::scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
+   ggplot2::scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
+   ggplot2::labs(title = "Site Map",
+                  x = "Longitude",
+                  y = "Latitude",
+                  col = " ",
+                  shape = " ") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      legend.position = "bottom",
+      text = ggplot2::element_text(size = text_size)
+    )
+
+  compass_df <- data.frame(
+    x = 0, y = 0,
+    xend = c(0, 0, 1, -1),
+    yend = c(1, -1, 0, 0),
+    label = c("N", "S", "E", "W")
+  )
+
+  compass_plot <- ggplot2::ggplot() +
+    ggplot2::geom_segment(data = compass_df,
+                          ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
+                          arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")),
+                          linewidth = 1) +
+    ggplot2::geom_text(data = compass_df,
+                       ggplot2::aes(x = 1.2 * xend, y = 1.2 * yend, label = label),
+                       size = text_size / 3.5) +
+    ggplot2::xlim(-1.5, 1.5) +
+    ggplot2::ylim(-1.5, 1.5) +
+    ggplot2::coord_fixed() +
+    ggplot2::theme_void() +
+    ggplot2::labs(title = " ")
+
+  site_map + compass_plot + patchwork::plot_layout(widths = c(4, 1))
 }
