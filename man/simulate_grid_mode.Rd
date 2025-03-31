@@ -8,14 +8,6 @@ simulate_grid_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_coor
   emission_rate, wind_data, grid_coords, puff_duration)
 }
 \arguments{
-\item{sim_dt}{Integer. Simulation time step (in seconds), determining how frequently the simulation
-updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.}
-
-\item{puff_dt}{Integer. Time interval (in seconds), determining how frequently new puffs are emitted into
-the simulation.}
-
-\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
-
 \item{start_time}{POSIXct. Start time of the simulation.}
 
 \item{end_time}{POSIXct. End time of the simulation.}
@@ -23,13 +15,21 @@ the simulation.}
 \item{source_coords}{Numeric vector. Coordinates of the emission source in meters (x, y, z).
 E.g, \code{c(x = 10, y = 0, z = 1.5)}.}
 
-\item{emission_rate}{Numeric. Emission rate of the source in kg/s.}
+\item{emission_rate}{Numeric. Emission rate of the source.}
 
 \item{wind_data}{Data frame. Wind data containing columns \code{wind_u} and \code{wind_v},
 representing wind components in the x and y directions, respectively, for each simulation step.}
 
 \item{grid_coords}{List. A list with three numeric vectors specifying the grid points for \code{x}, \code{y}, and \code{z}.
 E.g., \code{list(x = seq(0, 50, by = 1), y = seq(0, 50, by = 1), z = c(2.5))}.}
+
+\item{sim_dt}{Integer. Simulation time step (in seconds; default = 1), determining how frequently the simulation
+updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.}
+
+\item{puff_dt}{Integer. Time interval (in seconds; default = 1), determining how frequently new puffs are emitted into
+the simulation.}
+
+\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
 
 \item{puff_duration}{Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.}
 }
@@ -64,17 +64,20 @@ grid_coords <- list(
   z = c(2.5)
 )
 
-grid_concentrations_original <- simulate_grid_mode(
-    sim_dt = sim_dt,
-    puff_dt = puff_dt,
-    output_dt = output_dt,
+out <- simulate_grid_mode(
     start_time = start_time,
     end_time = end_time,
     source_coords = source_coords,
     emission_rate = emission_rate,
     wind_data = wind_data,
     grid_coords = grid_coords,
+    sim_dt = sim_dt,
+    puff_dt = puff_dt,
+    output_dt = output_dt,
     puff_duration = 1200
 )
 }
+}
+\references{
+Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024. Filling a critical need: a lightweight and fast Gaussian puff model implementation. doi: <10.26434/chemrxiv-2023-hc95q-v3>
 }

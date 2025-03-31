@@ -8,14 +8,6 @@ simulate_sensor_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_co
   emission_rate, wind_data, sensor_coords, puff_duration)
 }
 \arguments{
-\item{sim_dt}{Integer. Simulation time step (in seconds), determining how frequently the simulation
-updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.}
-
-\item{puff_dt}{Integer. Time interval (in seconds), determining how frequently new puffs are emitted into
-the simulation.}
-
-\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
-
 \item{start_time}{POSIXct. Start time of the simulation.}
 
 \item{end_time}{POSIXct. End time of the simulation.}
@@ -23,12 +15,20 @@ the simulation.}
 \item{source_coords}{Numeric vector. Coordinates of the emission source in meters (x, y, z).
 E.g, \code{c(x = 10, y = 0, z = 1.5)}.}
 
-\item{emission_rate}{Numeric. Emission rate of the source in kg/s.}
+\item{emission_rate}{Numeric. Emission rate of the source.}
 
 \item{wind_data}{Data frame. Wind data containing columns \code{wind_u} and \code{wind_v},
 representing wind components in the x and y directions, respectively, for each simulation step.}
 
 \item{sensor_coords}{Numeric matrix. Coordinates of sensors in meters (x, y, z format); row = sensor.}
+
+\item{sim_dt}{Integer. Simulation time step (in seconds; default = 1), determining how frequently the simulation
+updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.}
+
+\item{puff_dt}{Integer. Time interval (in seconds; default = 1), determining how frequently new puffs are emitted into
+the simulation.}
+
+\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
 
 \item{puff_duration}{Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.}
 }
@@ -64,9 +64,12 @@ The simulation emits puffs from the specified source at intervals of \code{puff_
 
   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 
-  simulate_sensor_mode(
-    sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-    emission_rate, wind_data, sensor_coords, puff_duration = 1200
+  out <- simulate_sensor_mode(
+    start_time, end_time, source_coords, emission_rate, wind_data,
+    sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
   )
 }
+}
+\references{
+Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024. Filling a critical need: a lightweight and fast Gaussian puff model implementation. doi: <10.26434/chemrxiv-2023-hc95q-v3>
 }

@@ -48,7 +48,7 @@
 #'   sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 #'
 #'   out <- simulate_sensor_mode(
-#'     start_time, end_time, source_coords, emission_rate, wind_data, 
+#'     start_time, end_time, source_coords, emission_rate, wind_data,
 #'     sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
 #'   )
 #' }
@@ -96,7 +96,7 @@ simulate_sensor_mode <- function(start_time, end_time,
     wind_v <- wind_data$wind_v[t_idx]
     wind_speed <- sqrt(wind_u^2 + wind_v^2)
 
-    stab_class <- get.stab.class(wind_speed, current_time)
+    stab_class <- get_stab_class(wind_speed, current_time)
 
     # emit new puffs if it's a puff emission interval
     # first, need to convert emission rate (Q) from kg/hr to kg/s and calculate mass per puff (q)
@@ -138,13 +138,13 @@ simulate_sensor_mode <- function(start_time, end_time,
         # calculate concentration
         concentration <- gpuff(
           Q = active_puffs$mass[puff], # use mass per puff instead of raw emission rate
-          stab.class = stab_class,
-          x.p = puff_x,
-          y.p = puff_y,
-          x.r.vec = sensor_x,
-          y.r.vec = sensor_y,
-          z.r.vec = sensor_z,
-          total.dist = total_dist,
+          stab_class = stab_class,
+          x_p = puff_x,
+          y_p = puff_y,
+          x_r_vec = sensor_x,
+          y_r_vec = sensor_y,
+          z_r_vec = sensor_z,
+          total_dist = total_dist,
           H = source_coords[3],
           U = wind_speed
         )

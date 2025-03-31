@@ -4,24 +4,24 @@
 \alias{gpuff}
 \title{Gaussian Puff Concentration Calculation}
 \usage{
-gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
 }
 \arguments{
 \item{Q}{Numeric. Mass per puff. E.g., for 100 puffs/hour of a 100 kg/hr emission, put 1 kg of mass into each puff.}
 
-\item{stab.class}{Character vector. Stability class ("A" to "F").}
+\item{stab_class}{Character vector. Stability class ("A" to "F").}
 
-\item{x.p}{Numeric. Puff position in the X direction.}
+\item{x_p}{Numeric. Puff position in the X direction.}
 
-\item{y.p}{Numeric. Puff position in the Y direction.}
+\item{y_p}{Numeric. Puff position in the Y direction.}
 
-\item{x.r.vec}{Numeric. The x-coordinate (east-west) where the concentration is calculated.}
+\item{x_r_vec}{Numeric. The x-coordinate (east-west) where the concentration is calculated.}
 
-\item{y.r.vec}{Numeric. The y-coordinate (north-south) where the concentration is calculated.}
+\item{y_r_vec}{Numeric. The y-coordinate (north-south) where the concentration is calculated.}
 
-\item{z.r.vec}{Numeric. The z-coordinate (height) where the concentration is calculated.}
+\item{z_r_vec}{Numeric. The z-coordinate (height) where the concentration is calculated.}
 
-\item{total.dist}{Numeric. The total distance the puff has traveled from the source in m.}
+\item{total_dist}{Numeric. The total distance the puff has traveled from the source in m.}
 
 \item{H}{Numeric. Source height.}
 
@@ -38,6 +38,6 @@ This function uses wind speed and direction components, advection adjustments, a
 }
 \examples{
 \dontrun{
-gpuff(Q, stab.class, x.p, y.p, x.r.vec, y.r.vec, z.r.vec, total.dist, H, U)
+gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
 }
 }
