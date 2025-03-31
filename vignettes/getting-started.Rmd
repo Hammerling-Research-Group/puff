@@ -23,42 +23,87 @@ Let's walk through a basic use case for the `puff` package. To do so, we will co
   - Sensor mode
   - Grid mode
   
-For each of these "modes", the workflow typically includes something like running the simulation to produce emission concentration values (either at individual *sensor* locations or over the full *grid* of the site), and then plot the results in a variety of ways with a variety of views. The latter task is at the heart of this package, which is the ability to produce accurate, clean, and publication-ready plots. Therefore, this vigentte focuses mostly on the plotting capabilities of `puff` rather than the simulation / modeling part. 
+For each of these "modes", the workflow typically includes something like running the simulation to produce emission concentration values (either at individual *sensor* locations or over the full *grid* of the site), and then plot the results in a variety of ways with a variety of views. The latter task is at the heart of this package, which is the ability to produce accurate, clean, and publication-ready plots. Therefore, this vignette focuses mostly on the plotting capabilities of `puff` rather than the simulation / modeling part. 
 
-## Run the Simulation: Sensor Mode
+## Run the Simulation
 
-Let's start simply with sensor mode. 
+Let's start simply with an example in sensor mode via `simulate_sensor_mode()`. 
 
-X
+```{r}
+devtools::load_all()
+
+set.seed(123)
+
+sim_dt <- 10
+puff_dt <- 10
+output_dt <- 60
+
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+
+source_coords <- c(0, 0, 2.5)
+sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+
+emission_rate <- 3.5
+
+wind_data <- data.frame(
+  wind_u = runif(3601, min = -3, max = 0.7),
+  wind_v = runif(3601, min = -3, max = 1.5)
+)
+
+out <- out <- simulate_sensor_mode(
+  sim_dt, puff_dt, output_dt, 
+  start_time, end_time, 
+  source_coords, emission_rate,
+  wind_data, 
+  sensor_coords,
+  puff_duration = 1200
+)
+```
 
 Inspect the output: 
 
-X
+```{r}
+head(out)
+```
+
+From the output, we can see the `Group.1` corresponds with the timestamps associated with each concentration value at `Sensor_1`. These names are intentionally generic to allow maximal flexibility for the user to rename and define how they want. For example, you might consider renaming for simplicity, e.g.: 
+
+```{r}
+out |> 
+  dplyr::rename(time = Group.1,
+                sensor_1_concentration = Sensor_1) |> 
+  head()
+```
 
 ## Plot the Results 
 
-Now, there are a variety of plotting options for the sensor mode. We will start with X. 
+Now, there are a variety of plotting options for the sensor mode. We will start with a simple time series via `time_series_plot()`:
 
-X
+```{r}
+time_series_plot(out)
+```
 
-## Run the Simulation: Grid Mode
+Or suppose you wanted to include the wind and vary point size by concentration amount. Do so with `faceted_time_series_plot()`:
 
-Now, let's demonstrate the grid mode in action. Start as before with the simulation to produce the concentration results across the grid. 
+```{r}
+faceted_time_series_plot(out, 
+                         sensor_coords,
+                         wind_data, 
+                         as.POSIXct(start_time), 
+                         as.POSIXct(end_time), 
+                         output_dt)
+```
 
-X
+You can also easily generate a quick map of the site denoting likely emission sources and sensors via `create_site_map()`:
 
-Inspect as before: 
+```{r}
+create_site_map(sensor_coords,
+                source_coords)
+```
 
-X
-
-## Plot the Results
-
-There are some more options for plotting in grid mode, given the increased dimensionality of the space. Of note, we can plot in 2D or 3D, and in this we have additional options for animated plots. 
-
-Let's take a look at X first. 
-
-X
+*Note*: all plots are of `ggplot` class. As such, users can further customize and adjust plots in any way that they might any other `ggplot` object (e.g., changing labels, colors, sizes, and so on).
 
 ## Concluding Remarks
 
-This vignette has focused on introducing users to a very basic version of the `puff` package. The package does much more, and we encourage wide and creative use to make the most of this powerful package for analyzing and reporting research about methane emissions. 
+This vignette has focused on introducing users to a very basic version of the `puff` package. The package does much more, including simulation and plotting in "grid mode". We encourage wide and creative use to make the most of this powerful package for analyzing and reporting research about methane emissions. 
