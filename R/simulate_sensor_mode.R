@@ -3,8 +3,8 @@
 #' Simulates atmospheric concentrations at sensor locations over time using a Gaussian puff forward model.
 #'   Concentrations are calculated based on emission rates, wind conditions, and puff dispersion.
 #'
-#' @usage simulate_sensor_mode(sim_dt, puff_dt, output_dt, start_time, end_time, source_coords,
-#'   emission_rate, wind_data, sensor_coords, puff_duration)
+#' @usage simulate_sensor_mode(start_time, end_time, source_coords, emission_rate, wind_data,
+#'   sensor_coords, sim_dt, puff_dt, output_dt, puff_duration)
 #'
 #' @param start_time POSIXct. Start time of the simulation.
 #' @param end_time POSIXct. End time of the simulation.

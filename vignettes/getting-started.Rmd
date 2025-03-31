@@ -18,6 +18,11 @@ knitr::opts_chunk$set(
 library(puff)
 ```
 
+```{r echo = FALSE}
+library(devtools)
+load_all()
+```
+
 Let's walk through a basic use case for the `puff` package. To do so, we will cover: 
 
   - Sensor mode
@@ -30,8 +35,6 @@ For each of these "modes", the workflow typically includes something like runnin
 Let's start simply with an example in sensor mode via `simulate_sensor_mode()`. 
 
 ```{r}
-devtools::load_all()
-
 set.seed(123)
 
 sim_dt <- 10
@@ -52,11 +55,11 @@ wind_data <- data.frame(
 )
 
 out <- out <- simulate_sensor_mode(
-  sim_dt, puff_dt, output_dt, 
   start_time, end_time, 
   source_coords, emission_rate,
   wind_data, 
   sensor_coords,
+  sim_dt, puff_dt, output_dt, 
   puff_duration = 1200
 )
 ```
@@ -80,13 +83,13 @@ out |>
 
 Now, there are a variety of plotting options for the sensor mode. We will start with a simple time series via `time_series_plot()`:
 
-```{r}
+```{r, fig.align='center', out.width='100%', fig.width=12, fig.height=8}
 time_series_plot(out)
 ```
 
 Or suppose you wanted to include the wind and vary point size by concentration amount. Do so with `faceted_time_series_plot()`:
 
-```{r}
+```{r, fig.align='center', out.width='100%', fig.width=12, fig.height=15}
 faceted_time_series_plot(out, 
                          sensor_coords,
                          wind_data, 
@@ -97,7 +100,7 @@ faceted_time_series_plot(out,
 
 You can also easily generate a quick map of the site denoting likely emission sources and sensors via `create_site_map()`:
 
-```{r}
+```{r, fig.align='center', out.width='100%', fig.width=12, fig.height=8}
 create_site_map(sensor_coords,
                 source_coords)
 ```
