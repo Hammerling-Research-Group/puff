@@ -21,7 +21,7 @@
 #' @param grid_coords List. A list with three numeric vectors specifying the grid points for \code{x}, \code{y}, and \code{z}.
 #'   E.g., \code{list(x = seq(0, 50, by = 1), y = seq(0, 50, by = 1), z = c(2.5))}.
 #' @param puff_duration Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.
-#'
+#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024. Filling a critical need: a lightweight and fast Gaussian puff model implementation. doi: <10.26434/chemrxiv-2023-hc95q-v3>
 #' @return An array of methane concentrations at every grid point over time
 #'
 #' @examples
