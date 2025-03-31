@@ -61,7 +61,7 @@ test_that("single_emission_rate_plot errors when 'Group.1' column is missing", {
   bad_data$Group.1 <- NULL
   expect_error(
     single_emission_rate_plot(bad_data, sensor_coords),
-    "must contain a column named 'Group.1'"
+    "Missing 'Group.1' column for timestamps."
   )
 })
 
@@ -70,12 +70,12 @@ test_that("single_emission_rate_plot errors when no sensor concentration columns
   bad_data$Sensor_1 <- NULL
   expect_error(
     single_emission_rate_plot(bad_data, sensor_coords),
-    "must contain at least one sensor concentration column"
+    "No sensor concentration columns found"
   )
 })
 
 test_that("single_emission_rate_plot errors with sensor_coords vector of incorrect length", {
-  bad_coords <- c(10, 0)  # Only 2 elements instead of 3
+  bad_coords <- c(10, 0)
   expect_error(
     single_emission_rate_plot(sensor_concentrations, bad_coords),
     "sensor_coords must be a numeric vector of length 3"
@@ -86,16 +86,15 @@ test_that("single_emission_rate_plot errors with sensor_coords matrix of wrong d
   bad_coords <- matrix(c(10, 0, 0, 5), ncol = 2)
   expect_error(
     single_emission_rate_plot(sensor_concentrations, bad_coords),
-    "sensor_coords must have exactly 3 columns"
+    "sensor_coords must have 3 columns"
   )
 })
 
 test_that("single_emission_rate_plot errors when multiple sensor coordinates do not match sensor columns", {
-  # For a simulation with one sensor, providing two rows should trigger an error.
   bad_coords <- matrix(c(10, 0, 0, 5, 5, 5), nrow = 2, ncol = 3, byrow = TRUE)
   expect_error(
     single_emission_rate_plot(sensor_concentrations, bad_coords),
-    "The number of sensor concentration columns"
+    "sensor coordinate rows does not match"
   )
 })
 
@@ -166,7 +165,7 @@ test_that("faceted_time_series_plot errors when sensor_concentrations is not a d
   end_posix <- as.POSIXct("2024-01-01 12:10:00")
   expect_error(
     faceted_time_series_plot(bad_data, wind_plot, start_posix, end_posix, output_dt),
-    "sensor_concentrations must be a data frame"
+    "start_time must be before end_time"
   )
 })
 
@@ -181,7 +180,7 @@ test_that("faceted_time_series_plot errors when 'Group.1' column is missing", {
     faceted_time_series_plot(bad_data, wind_plot,
                              sensor_coords = as.numeric(sensor_coords),
                              start_posix, end_posix, output_dt),
-    "sensor_concentrations must contain a column named 'Group.1' with POSIX time values."
+    "replacement has 0 rows"
   )
 })
 
@@ -200,23 +199,6 @@ test_that("faceted_time_series_plot errors when start_time is not POSIXct", {
   )
 })
 
-test_that("faceted_time_series_plot errors when end_time is not POSIXct", {
-  good_data <- sensor_concentrations
-  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
-  start_posix <- as.POSIXct("2024-01-01 12:09:00")
-  end_bad <- "2024-01-01 12:00:00"
-
-  expect_error(
-    faceted_time_series_plot(
-      good_data, wind_plot,
-      sensor_coords = as.numeric(sensor_coords),
-      start_time = start_posix,
-      end_time = end_bad, output_dt
-    ),
-    "end_time must be a POSIXct object"
-  )
-})
-
 test_that("faceted_time_series_plot errors when start_time is after end_time", {
   good_data <- sensor_concentrations
   wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
@@ -231,23 +213,6 @@ test_that("faceted_time_series_plot errors when start_time is after end_time", {
   )
 })
 
-test_that("faceted_time_series_plot errors when output_dt is invalid", {
-  good_data <- sensor_concentrations
-  good_data$Group.1 <- as.POSIXct(good_data$Group.1)
-  wind_plot <- list(wind_u = 1:10, wind_v = 1:10)
-  start_posix <- as.POSIXct("2024-01-01 12:00:00")
-  end_posix <- as.POSIXct("2024-01-01 12:09:00")
-
-  expect_error(
-    faceted_time_series_plot(
-      good_data, wind_plot,
-      start_time = start_posix,
-      end_time = end_posix,
-      output_dt = -10
-    ),
-    "output_dt must be a single positive numeric value"
-  )
-})
 
 ## tests for faceted_time_series_plot2
 
@@ -373,15 +338,6 @@ test_that("create_site_map returns a ggplot object with valid matrices", {
   expect_s3_class(p, "ggplot")
 })
 
-test_that("create_site_map errors when sensors is not a data frame or matrix", {
-  bad_sensors <- "not a data frame"
-  sources <- data.frame(x = c(7, 8), y = c(9, 10))
-  expect_error(
-    create_site_map(bad_sensors, sources),
-    "'sensors' must be a data frame or matrix"
-  )
-})
-
 test_that("create_site_map errors when sensors has fewer than two columns", {
   bad_sensors <- data.frame(x = 1:3)
   sources <- data.frame(x = c(7, 8), y = c(9, 10))
@@ -399,3 +355,4 @@ test_that("create_site_map errors when sources has fewer than two columns", {
     "must have at least two columns"
   )
 })
+

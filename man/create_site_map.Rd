@@ -7,28 +7,22 @@
 create_site_map(sensors, sources)
 }
 \arguments{
-\item{sensors}{A data frame or matrix containing sensor locations. It must include:
-- Either columns named \code{x} and \code{y}, or at least two columns where
-  the first two are taken as \code{x} and \code{y} coordinates.}
+\item{sensors}{Coordinates for sensor locations. Any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.}
 
-\item{sources}{A data frame or matrix containing source locations. It must include:
-- Either columns named \code{x} and \code{y}, or at least two columns where
-  the first two are taken as \code{x} and \code{y} coordinates.}
+\item{sources}{Coordinates for source locations. As with \code{sensors}, any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.}
 }
 \value{
-A ggplot object showing a site map of sensors and sources.
+A ggplot object showing a site map of sensors (O) and sources (X).
 }
 \description{
-This function generates a site map showing the locations of sensors and sources.
-It accepts inputs as either data frames or matrices. In the event that extra
-columns (e.g., z coordinates) are present, only the first two columns (or the
-columns named "x" and "y" if available) will be used.
+This function generates a simple site map showing the locations of sensors and sources.
+It accepts any object that can be coerced into x-y coordinate pairs (e.g., vectors, matrices, data frames).
 }
 \examples{
 \dontrun{
-sensors <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
-sources <- data.frame(x = c(7, 8), y = c(9, 10))
+source_coords <- c(0, 0, 2.5)
+sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 
-create_site_map(sensors, sources)
+create_site_map(sensor_coords, source_coords)
 }
 }

@@ -393,7 +393,7 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords) {
 
   long_data <- tidyr::pivot_longer(
     sensor_concentrations,
-    cols = all_of(sensor_cols),
+    cols = tidyselect::all_of(sensor_cols),
     names_to = "sensor",
     values_to = "concentration"
   )
@@ -546,6 +546,10 @@ faceted_time_series_plot <- function(sensor_concentrations,
     }
   }
 
+  if (start_time > end_time) {
+    stop("start_time must be before end_time")
+  }
+
   sensor_cols <- grep("^Sensor_\\d+$", names(sensor_concentrations), value = TRUE)
   if (length(sensor_cols) == 0) stop("No sensor concentration columns found.")
 
@@ -554,7 +558,7 @@ faceted_time_series_plot <- function(sensor_concentrations,
 
   long_data <- tidyr::pivot_longer(
     sensor_concentrations,
-    cols = all_of(sensor_cols),
+    cols = tidyselect::all_of(sensor_cols),
     names_to = "sensor",
     values_to = "concentration"
   )
@@ -585,6 +589,13 @@ faceted_time_series_plot <- function(sensor_concentrations,
     ggplot2::theme_bw()
 
   # Panel 2: Wind Rose
+  if (!inherits(start_time, "POSIXct")) {
+    stop("start_time must be a POSIXct object")
+  }
+  if (!inherits(end_time, "POSIXct")) {
+    stop("end_time must be a POSIXct object")
+  }
+
   time_sequence <- seq(from = start_time, to = end_time, by = output_dt)
   wind_u <- wind_data$wind_u[seq_along(time_sequence)]
   wind_v <- wind_data$wind_v[seq_along(time_sequence)]
@@ -827,81 +838,57 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
 
 }
 
-
 #' Create a Site Map of Sensors and Sources
 #'
-#' This function generates a site map showing the locations of sensors and sources.
-#' It accepts inputs as either data frames or matrices. In the event that extra
-#' columns (e.g., z coordinates) are present, only the first two columns (or the
-#' columns named "x" and "y" if available) will be used.
+#' This function generates a simple site map showing the locations of sensors and sources.
+#' It accepts any object that can be coerced into x-y coordinate pairs (e.g., vectors, matrices, data frames).
 #'
-#' @param sensors A data frame or matrix containing sensor locations. It must include:
-#'   - Either columns named \code{x} and \code{y}, or at least two columns where
-#'     the first two are taken as \code{x} and \code{y} coordinates.
-#' @param sources A data frame or matrix containing source locations. It must include:
-#'   - Either columns named \code{x} and \code{y}, or at least two columns where
-#'     the first two are taken as \code{x} and \code{y} coordinates.
+#' @param sensors Coordinates for sensor locations. Any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.
+#' @param sources Coordinates for source locations. As with \code{sensors}, any input that can be interpreted as (x, y) coordinates. This includes numeric vectors (length ≥ 2), matrices, or data frames with at least two columns.
 #'
-#' @return A ggplot object showing a site map of sensors and sources.
+#' @return A ggplot object showing a site map of sensors (O) and sources (X).
 #'
 #' @examples
 #' \dontrun{
-#' sensors <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6))
-#' sources <- data.frame(x = c(7, 8), y = c(9, 10))
+#' source_coords <- c(0, 0, 2.5)
+#' sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 #'
-#' create_site_map(sensors, sources)
+#' create_site_map(sensor_coords, source_coords)
 #' }
 #' @export
-create_site_map <- function(sensors,
-                            sources) {
-
+create_site_map <- function(sensors, sources) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("The 'ggplot2' package is required but not installed.")
   }
 
-  # Helper function to process the coordinate input
-  process_coords <- function(coords, label) {
-    if (is.matrix(coords)) {
-      coords <- as.data.frame(coords)
-    } else if (!is.data.frame(coords)) {
-      stop(sprintf("'%s' must be a data frame or matrix.", label))
+  to_xy_df <- function(obj, label) {
+    if (is.numeric(obj) && is.null(dim(obj))) {
+      if (length(obj) < 2) {
+        stop(sprintf("'%s' must have at least two values to represent x and y.", label))
+      }
+      obj <- matrix(obj[1:2], ncol = 2)
     }
 
-    # If columns "x" and "y" exist, extract them.
-    if (all(c("x", "y") %in% names(coords))) {
-      coords <- coords[, c("x", "y"), drop = FALSE]
-    } else {
-      # If not, ensure there are at least two columns and use the first two.
-      if (ncol(coords) < 2) {
-        stop(sprintf("'%s' must have at least two columns representing x and y coordinates.", label))
-      }
-      coords <- coords[, 1:2, drop = FALSE]
-      names(coords)[1:2] <- c("x", "y")
+    df <- as.data.frame(obj)
+    if (ncol(df) < 2) {
+      stop(sprintf("'%s' must have at least two columns to represent x and y coordinates.", label))
     }
-    return(coords)
+
+    df <- df[, 1:2]
+    names(df) <- c("x", "y")
+    df$type <- label
+    df
   }
 
-  sensors <- process_coords(sensors, "sensors")
-  sources <- process_coords(sources, "sources")
+  sensor_df <- to_xy_df(sensors, "Sensor")
+  source_df <- to_xy_df(sources, "Source")
+  site_df <- rbind(sensor_df, source_df)
 
-  sensors$type <- "Sensor"
-  sources$type <- "Source"
-
-  combined <- rbind(sensors, sources)
-
-  ggplot2::ggplot(combined, ggplot2::aes(x = x, y = y,
-                                         shape = type,
-                                         color = type)) +
+  ggplot2::ggplot(site_df, ggplot2::aes(x = x, y = y, shape = type, color = type)) +
     ggplot2::geom_point(size = 4, stroke = 1.5) +
-    ggplot2::scale_shape_manual(values = c("Sensor" = 21,
-                                           "Source" = 4)) +
-    ggplot2::scale_color_manual(values = c("Sensor" = "blue",
-                                           "Source" = "red")) +
-    ggplot2::labs(
-      title = "Site Map",
-      x = "Longitude",
-      y = "Latitude"
-    ) +
+    ggplot2::scale_shape_manual(values = c("Sensor" = 21, "Source" = 4)) +
+    ggplot2::scale_color_manual(values = c("Sensor" = "blue", "Source" = "red")) +
+    ggplot2::labs(title = "Site Map", x = "Longitude", y = "Latitude") +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 }

@@ -30,7 +30,7 @@ Imports:
     patchwork,
     plotly,
     scales,
-    stringr
+    tidyselect
 Suggests: 
     knitr,
     rmarkdown,
