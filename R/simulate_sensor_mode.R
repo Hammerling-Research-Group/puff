@@ -30,7 +30,9 @@
 #' - Total sensor concentration is the sum of all active puff contributions at each timestep.
 #' - Concentrations are aggregated into intervals matching `output_dt` before being returned.
 #'
-#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024. Filling a critical need: a lightweight and fast Gaussian puff model implementation. doi: <10.26434/chemrxiv-2023-hc95q-v3>
+#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024.
+#'   Filling a critical need: a lightweight and fast Gaussian puff model implementation.
+#'   doi: <10.26434/chemrxiv-2023-hc95q-v3>
 #'
 #' @examples
 #' \dontrun{
@@ -102,7 +104,6 @@ simulate_sensor_mode <- function(start_time, end_time,
   sensor_z <- sensor_coords[, 3]
   n_sensors <- nrow(sensor_coords)
 
-  # initialize total concentration matrix across all sources (from 1 to many)
   total_concentrations <- matrix(0, nrow = n_steps, ncol = n_sensors,
                                  dimnames = list(NULL, paste0("Sensor_", 1:n_sensors)))
 
@@ -147,7 +148,6 @@ simulate_sensor_mode <- function(start_time, end_time,
         active_puffs <- dplyr::bind_rows(active_puffs, new_puff)
       }
 
-      # remove expired puffs
       active_puffs$time_elapsed <- current_elapsed - active_puffs$time_emitted
       active_puffs <- active_puffs[active_puffs$time_elapsed <= puff_duration, ]
       if (nrow(active_puffs) == 0) next

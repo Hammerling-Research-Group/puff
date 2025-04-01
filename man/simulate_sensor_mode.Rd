@@ -98,5 +98,7 @@ accounts for puff dispersion based on wind conditions and atmospheric stability 
 }
 }
 \references{
-Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024. Filling a critical need: a lightweight and fast Gaussian puff model implementation. doi: <10.26434/chemrxiv-2023-hc95q-v3>
+Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024.
+  Filling a critical need: a lightweight and fast Gaussian puff model implementation.
+  doi: <10.26434/chemrxiv-2023-hc95q-v3>
 }
