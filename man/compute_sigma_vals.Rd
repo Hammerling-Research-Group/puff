@@ -2,24 +2,23 @@
 % Please edit documentation in R/helpers.R
 \name{compute_sigma_vals}
 \alias{compute_sigma_vals}
-\title{Find Average Sigma Values Based On Stability Class and Total Distance Traveled}
+\title{Compute Sigma Values Based on Stability Class and Distance}
 \usage{
 compute_sigma_vals(stab_class, total_dist)
 }
 \arguments{
-\item{stab_class}{A character vector representing the stability class(es) ("A" to "F").}
+\item{stab_class}{Character vector of stability classes ("A" to "F")}
 
-\item{total_dist}{A numeric value representing the distance traveled in meters (m).}
+\item{total_dist}{Numeric vector of distances in km (must match length of stab_class or be scalar)}
 }
 \value{
-A numeric vector representing the average sigma values over the stability classes passed to the function.
+2-row matrix with sigma_y (row 1) and sigma_z (row 2) values
 }
 \description{
-This function calculates the average sigma values based on stability class and the total distance traveled.
-             It reports the averages of the sigma values dependent on the inputs.
+Compute Sigma Values Based on Stability Class and Distance
 }
 \examples{
 \dontrun{
-compute_sigma_vals(A, 0.7)
+out <- compute_sigma_vals(A, 0.7)
 }
 }

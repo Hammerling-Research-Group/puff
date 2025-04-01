@@ -20,6 +20,6 @@ This function calculates the stability class based on wind speed (U) and the tim
 }
 \examples{
 \dontrun{
-get_stab_class(3, 12)
+out <- get_stab_class(3, 12)
 }
 }

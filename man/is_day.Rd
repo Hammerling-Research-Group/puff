@@ -17,6 +17,6 @@ This function checks the time and classifies it as day or not
 }
 \examples{
 \dontrun{
-is_day(8)
+out <- is_day(8)
 }
 }

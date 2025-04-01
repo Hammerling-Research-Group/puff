@@ -4,48 +4,60 @@
 \alias{simulate_sensor_mode}
 \title{Simulate Atmospheric Concentration at Sensor Locations}
 \usage{
-simulate_sensor_mode(start_time, end_time, source_coords, emission_rate, wind_data,
-  sensor_coords, sim_dt, puff_dt, output_dt, puff_duration)
+simulate_sensor_mode(
+  start_time,
+  end_time,
+  source_coords,
+  emission_rate,
+  wind_data,
+  sensor_coords,
+  sim_dt = 1,
+  puff_dt = 1,
+  output_dt,
+  puff_duration = 1200
+)
 }
 \arguments{
 \item{start_time}{POSIXct. Start time of the simulation.}
 
 \item{end_time}{POSIXct. End time of the simulation.}
 
-\item{source_coords}{Numeric vector. Coordinates of the emission source in meters (x, y, z).
-E.g, \code{c(x = 10, y = 0, z = 1.5)}.}
+\item{source_coords}{Numeric vector or matrix. Source coordinates in meters (x, y, z). If a single source,
+pass as a vector. For multiple sources, use a matrix where each row is a source.}
 
-\item{emission_rate}{Numeric. Emission rate of the source.}
+\item{emission_rate}{Numeric. Emission rate from each source in kg/hr. Applied uniformly to all sources.}
 
-\item{wind_data}{Data frame. Wind data containing columns \code{wind_u} and \code{wind_v},
-representing wind components in the x and y directions, respectively, for each simulation step.}
+\item{wind_data}{Data frame. Must contain `wind_u` and `wind_v` columns representing wind speed components
+in the x (east-west) and y (north-south) directions at each simulation timestep.}
 
-\item{sensor_coords}{Numeric matrix. Coordinates of sensors in meters (x, y, z format); row = sensor.}
+\item{sensor_coords}{Numeric matrix. Sensor coordinates in meters (x, y, z); one row per sensor.}
 
-\item{sim_dt}{Integer. Simulation time step (in seconds; default = 1), determining how frequently the simulation
-updates the positions of puffs and calculates concentrations. This is the base resolution of the simulation.}
+\item{sim_dt}{Integer. Simulation time step in seconds (default: 1). Controls how often the simulation
+updates concentrations.}
 
-\item{puff_dt}{Integer. Time interval (in seconds; default = 1), determining how frequently new puffs are emitted into
-the simulation.}
+\item{puff_dt}{Integer. Puff emission interval in seconds (default: 1). Controls how often a new puff is emitted.}
 
-\item{output_dt}{Integer. Desired time resolution (in seconds) for the final output of concentrations.}
+\item{output_dt}{Integer. Desired resolution in seconds for output concentrations.}
 
-\item{puff_duration}{Numeric. Lifetime of each puff (in seconds) before it dissipates. Default at 1200.}
+\item{puff_duration}{Numeric. Lifetime of each puff in seconds (default: 1200). Puffs are removed after this time.}
 }
 \value{
-A data frame containing aggregated methane concentrations at sensor locations, with rows
-  corresponding to output timestamps and columns to sensors.
+A data frame with aggregated sensor concentrations across time.
+  Rows represent time intervals (`output_dt`), columns represent sensors (`Sensor_1`, `Sensor_2`, etc.).
 }
 \description{
-Simulates atmospheric concentrations at sensor locations over time using a Gaussian puff forward model.
-  Concentrations are calculated based on emission rates, wind conditions, and puff dispersion.
+This function simulates atmospheric methane concentrations at one or more sensor locations
+using a Gaussian puff forward model. It supports one or multiple emission sources and assumes
+each puff maintains a constant wind speed and direction throughout its lifetime. The function
+accounts for puff dispersion based on wind conditions and atmospheric stability class.
 }
 \details{
-The simulation emits puffs from the specified source at intervals of \code{puff_dt}
-  and updates their positions based on wind data at intervals of \code{sim_dt}. Concentrations
-  at sensor locations are calculated using a Gaussian puff forward model, which accounts for dispersion
-  based on the stability class and other inputs. Finally, concentrations are aggregated
-  to match the \code{output_dt} resolution.
+- Each source emits puffs at regular intervals (`puff_dt`) with a fixed mass based on `emission_rate`.
+- Wind speed and direction at the time of puff emission are used to advect the puff and determine dispersion.
+- Puff position is analytically computed at each timestep based on wind, without tracking in-between steps.
+- Puff dispersion is computed using stability-class-based sigma values from a fast lookup.
+- Total sensor concentration is the sum of all active puff contributions at each timestep.
+- Concentrations are aggregated into intervals matching `output_dt` before being returned.
 }
 \examples{
 \dontrun{
@@ -53,20 +65,35 @@ The simulation emits puffs from the specified source at intervals of \code{puff_
   sim_dt <- 10
   puff_dt <- 10
   output_dt <- 60
-  start_time <- "2024-01-01 12:00:00"
-  end_time <- "2024-01-01 13:00:00"
-  source_coords <- c(0, 0, 2.5)
-  emission_rate <- 3.5
+  start_time <- as.POSIXct("2024-01-01 12:00:00")
+  end_time <- as.POSIXct("2024-01-01 13:00:00")
+
+  source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
+
+  sensor_coords <- matrix(c(
+   -20, 0, 2.0,
+     0, -20, 2.0,
+    20, 0, 2.0,
+     0, 20, 2.0,
+    10, 10, 2.0
+  ), ncol = 3, byrow = TRUE)
+
   wind_data <- data.frame(
     wind_u = runif(3601, min = -3, max = 0.7),
     wind_v = runif(3601, min = -3, max = 1.5)
   )
 
-  sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
-
   out <- simulate_sensor_mode(
-    start_time, end_time, source_coords, emission_rate, wind_data,
-    sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
+    start_time = start_time,
+    end_time = end_time,
+    source_coords = source_coords,
+    emission_rate = 3.5,
+    wind_data = wind_data,
+    sensor_coords = sensor_coords,
+    sim_dt = sim_dt,
+    puff_dt = puff_dt,
+    output_dt = output_dt,
+    puff_duration = 1200
   )
 }
 }

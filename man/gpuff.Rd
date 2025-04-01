@@ -38,6 +38,6 @@ This function uses wind speed and direction components, advection adjustments, a
 }
 \examples{
 \dontrun{
-gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
+out <- gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
 }
 }

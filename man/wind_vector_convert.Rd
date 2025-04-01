@@ -20,6 +20,6 @@ This function converts between coordinate systems by changing from degrees to ra
 }
 \examples{
 \dontrun{
-wind_vector_convert(speed_vec,direction_vec)
+out <- wind_vector_convert(speed_vec,direction_vec)
 }
 }
