@@ -21,7 +21,7 @@ grid_coords <- list(
   z = c(2.5)
 )
 
-grid_concentrations_original <- simulate_grid_mode(
+out <- simulate_grid_mode(
     sim_dt = sim_dt,
     puff_dt = puff_dt,
     output_dt = output_dt,
@@ -29,7 +29,7 @@ grid_concentrations_original <- simulate_grid_mode(
     end_time = end_time,
     source_coords = source_coords,
     emission_rate = emission_rate,
-    wind_data = wind_data,
+    wind_data = data.frame(wind_data),
     grid_coords = grid_coords,
     puff_duration = 1200
 )
@@ -38,11 +38,11 @@ grid_concentrations_original <- simulate_grid_mode(
 test_that("Returns the correct output dimensions", {
   expected_steps <- length(seq(from = as.POSIXct(start_time), to = as.POSIXct(end_time), by = output_dt))
   expected_grid_points <- length(grid_coords$x) * length(grid_coords$y) * length(grid_coords$z)
-  expect_equal(dim(grid_concentrations_original), c(expected_steps, expected_grid_points))
+  expect_equal(dim(out), c(expected_steps, expected_grid_points))
 })
 
 test_that("Concentration values are non-negative", {
-  expect_true(all(grid_concentrations_original >= 0))
+  expect_true(all(out >= 0))
 })
 
 test_that("Time intervals match", {
@@ -52,10 +52,10 @@ test_that("Time intervals match", {
 })
 
 test_that("Concentration values are reasonable given the emission rate and grid size", {
-  max_concentration <- max(grid_concentrations_original)
+  max_concentration <- max(out)
   expect_true(max_concentration <= 10)
 })
 
 test_that("No NA values in the output concentration array", {
-  expect_true(all(!is.na(grid_concentrations_original)))
+  expect_true(all(!is.na(out)))
 })

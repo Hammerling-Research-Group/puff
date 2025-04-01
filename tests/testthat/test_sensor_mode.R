@@ -20,7 +20,7 @@ wind_data <- data.frame(
 
 sensor_coords <- matrix(c(100, 0, 0), ncol = 3, byrow = TRUE)
 
-result <- simulate_sensor_mode(
+out <- simulate_sensor_mode(
   sim_dt = sim_dt,
   puff_dt = puff_dt,
   output_dt = output_dt,
@@ -35,7 +35,7 @@ result <- simulate_sensor_mode(
 
 # tests
 test_that("simulate_sensor_mode returns a data frame", {
-  expect_s3_class(result, "data.frame")
+  expect_s3_class(out, "data.frame")
 })
 
 test_that("simulate_sensor_mode errors when wind_data is not a data frame", {
@@ -57,31 +57,31 @@ test_that("simulate_sensor_mode errors when wind_data is not a data frame", {
       sensor_coords = sensor_coords,
       puff_duration = 1200
     ),
-    "`wind_data` must be a data frame or tibble. Supplied input is of type list"
+    "`wind_data` must be a data frame or tibble."
   )
 })
 
 test_that("Concentration values are reasonable given emission rate and distance", {
-  max_concentration <- max(as.matrix(result[,-1]))
+  max_concentration <- max(as.matrix(out[,-1]))
   expect_true(max_concentration <= 10)
 })
 
 test_that("No NA values in the concentration output", {
-  expect_true(all(!is.na(as.matrix(result[,-1]))))
+  expect_true(all(!is.na(as.matrix(out[,-1]))))
 })
 
 test_that("Number of output rows corresponds to output_dt intervals", {
   expected_rows <- length(seq(from = start_time + output_dt, to = end_time, by = output_dt))
-  expect_equal(nrow(result), expected_rows)
+  expect_equal(nrow(out), expected_rows)
 })
 
 test_that("Concentration values are non-negative", {
-  concentration_values <- as.matrix(result[,-1])
+  concentration_values <- as.matrix(out[,-1])
   expect_true(all(concentration_values >= 0))
 })
 
 test_that("Output time intervals match output_dt", {
-  output_times <- as.POSIXct(result[, 1], format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  output_times <- as.POSIXct(out[, 1], format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
   diffs <- as.numeric(diff(output_times, units = "secs"))
 
