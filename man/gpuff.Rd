@@ -15,11 +15,11 @@ gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
 
 \item{y_p}{Numeric. Puff position in the Y direction.}
 
-\item{x_r_vec}{Numeric. The x-coordinate (east-west) where the concentration is calculated.}
+\item{x_r_vec}{Numeric vector. The x-coordinate (east-west) where the concentration is calculated.}
 
-\item{y_r_vec}{Numeric. The y-coordinate (north-south) where the concentration is calculated.}
+\item{y_r_vec}{Numeric vector. The y-coordinate (north-south) where the concentration is calculated.}
 
-\item{z_r_vec}{Numeric. The z-coordinate (height) where the concentration is calculated.}
+\item{z_r_vec}{Numeric vector. The z-coordinate (height) where the concentration is calculated.}
 
 \item{total_dist}{Numeric. The total distance the puff has traveled from the source in m.}
 

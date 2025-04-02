@@ -238,9 +238,9 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #' @param stab_class Character vector. Stability class ("A" to "F").
 #' @param x_p Numeric. Puff position in the X direction.
 #' @param y_p Numeric. Puff position in the Y direction.
-#' @param x_r_vec Numeric. The x-coordinate (east-west) where the concentration is calculated.
-#' @param y_r_vec Numeric. The y-coordinate (north-south) where the concentration is calculated.
-#' @param z_r_vec Numeric. The z-coordinate (height) where the concentration is calculated.
+#' @param x_r_vec Numeric vector. The x-coordinate (east-west) where the concentration is calculated.
+#' @param y_r_vec Numeric vector. The y-coordinate (north-south) where the concentration is calculated.
+#' @param z_r_vec Numeric vector. The z-coordinate (height) where the concentration is calculated.
 #' @param total_dist Numeric. The total distance the puff has traveled from the source in m.
 #' @param H Numeric. Source height.
 #' @param U Numeric. Wind speed in m/s.
