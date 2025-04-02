@@ -155,8 +155,7 @@ simulate_sensor_mode <- function(start_time, end_time,
       puff_x <- src[1] + active_puffs$wind_u * active_puffs$time_elapsed
       puff_y <- src[2] + active_puffs$wind_v * active_puffs$time_elapsed
 
-      total_dist <- sqrt((outer(rep(src[1], n_sensors), puff_x, "-"))^2 +
-                           (outer(rep(src[2], n_sensors), puff_y, "-"))^2)
+      total_dist <- sqrt((puff_x - src[1])^2 + (puff_y - src[2])^2)
 
       compute_concentration <- function(puff_idx) {
         gpuff(
@@ -167,7 +166,7 @@ simulate_sensor_mode <- function(start_time, end_time,
           x_r_vec = sensor_x,
           y_r_vec = sensor_y,
           z_r_vec = sensor_z,
-          total_dist = total_dist[, puff_idx],
+          total_dist = total_dist[puff_idx],
           H = src[3],
           U = active_puffs$wind_speed[puff_idx]
         )
