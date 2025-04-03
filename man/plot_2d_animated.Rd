@@ -28,9 +28,9 @@ plot_2d_animated(
 
 \item{output_dt}{A character string or numeric value specifying the time interval between outputs.}
 
-\item{frames}{Numeric. Duration between frames in the animation (milliseconds).}
+\item{frames}{Numeric. Duration between frames in the animation (milliseconds). Default is 100.}
 
-\item{transition}{Numeric. Duration for transitioning between frames (milliseconds).}
+\item{transition}{Numeric. Duration for transitioning between frames (milliseconds). Default is 99.}
 
 \item{save}{Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.}
 

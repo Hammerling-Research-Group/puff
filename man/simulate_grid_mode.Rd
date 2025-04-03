@@ -50,6 +50,11 @@ throughout its lifetime, and corresponding dispersion parameters are determined 
 - Concentration contributions from all active puffs are computed at each grid point and summed.
 - Concentrations are aggregated and returned at a coarser time resolution defined by \code{output_dt}.
 }
+\note{
+If you have location data in latitude/longitude, you need to convert it to easting/northing (UTM) to get in units of meters.
+
+All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
+}
 \examples{
 \dontrun{
   set.seed(123)

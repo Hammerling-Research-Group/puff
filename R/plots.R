@@ -9,8 +9,8 @@
 #' @param start A character string specifying the start time of the simulation (e.g., "YYYY-MM-DD HH:MM:SS").
 #' @param end A character string specifying the end time of the simulation (e.g., "YYYY-MM-DD HH:MM:SS").
 #' @param output_dt A character string or numeric value specifying the time interval between outputs.
-#' @param frames Numeric. Duration between frames in the animation (milliseconds).
-#' @param transition Numeric. Duration for transitioning between frames (milliseconds).
+#' @param frames Numeric. Duration between frames in the animation (milliseconds). Default is 100.
+#' @param transition Numeric. Duration for transitioning between frames (milliseconds). Default is 99.
 #' @param save Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.
 #' @param interpolate_grid Logical. If `TRUE`, applies interpolation to refine grid resolution and make the heatmap smoother. Default `FALSE`.
 #' @param granularity Numeric. Sets the number of points in the finer grid resolution when `interpolate_grid = TRUE`. Default `100`.
@@ -164,8 +164,8 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @param start A character string specifying the start time of the simulation (e.g., "YYYY-MM-DD HH:MM:SS").
 #' @param end A character string specifying the end time of the simulation (e.g., "YYYY-MM-DD HH:MM:SS").
 #' @param output_dt A character string or numeric value specifying the time interval between outputs.
-#' @param frames Numeric. Duration between frames in the animation (milliseconds).
-#' @param transition Numeric. Duration for transitioning between frames (milliseconds).
+#' @param frames Numeric. Duration between frames in the animation (milliseconds). Default is 100.
+#' @param transition Numeric. Duration for transitioning between frames (milliseconds). Default is 99.
 #' @param plot_type Character. "contour" (default) or "scatter" to specify the type of plot.
 #' @param save Logical. If `TRUE`, saves the plot as an HTML file named `2D_heatmap.html` and specifies saved location. Default set to `FALSE`.
 #'

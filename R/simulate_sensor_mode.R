@@ -19,6 +19,10 @@
 #' @param output_dt Integer. Desired resolution in seconds for output concentrations.
 #' @param puff_duration Numeric. Lifetime of each puff in seconds (default: 1200). Puffs are removed after this time.
 #'
+#' @note If you have location data in latitude/longitude, you need to convert it to easting/northing (UTM) to get in units of meters.
+#'
+#' @note All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
+#'
 #' @return A data frame with aggregated sensor concentrations across time.
 #'   Rows represent time intervals (`output_dt`), columns represent sensors (`Sensor_1`, `Sensor_2`, etc.).
 #'

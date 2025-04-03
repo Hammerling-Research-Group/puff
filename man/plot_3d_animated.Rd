@@ -27,9 +27,9 @@ plot_3d_animated(
 
 \item{output_dt}{A character string or numeric value specifying the time interval between outputs.}
 
-\item{frames}{Numeric. Duration between frames in the animation (milliseconds).}
+\item{frames}{Numeric. Duration between frames in the animation (milliseconds). Default is 100.}
 
-\item{transition}{Numeric. Duration for transitioning between frames (milliseconds).}
+\item{transition}{Numeric. Duration for transitioning between frames (milliseconds). Default is 99.}
 
 \item{plot_type}{Character. "contour" (default) or "scatter" to specify the type of plot.}
 

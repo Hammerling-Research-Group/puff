@@ -14,13 +14,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r eval = FALSE}
-library(puff)
-```
-
 ```{r echo = FALSE}
 library(devtools)
 load_all()
+```
+
+```{r eval = FALSE}
+library(puff)
 ```
 
 Let's walk through a basic use case for the `puff` package. To do so, we will cover: 
