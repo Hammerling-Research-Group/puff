@@ -20,12 +20,12 @@ LazyData: true
 URL: https://github.com/Hammerling-Research-Group/puff
 BugReports: https://github.com/Hammerling-Research-Group/puff/issues
 RoxygenNote: 7.3.2
+Depends: R (>= 4.1.0)
 Imports: 
     ggplot2,
     dplyr,
     tidyr,
     magrittr,
-    akima,
     htmlwidgets,
     patchwork,
     plotly,
@@ -35,6 +35,7 @@ Suggests:
     knitr,
     rmarkdown,
     devtools,
+    akima,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
