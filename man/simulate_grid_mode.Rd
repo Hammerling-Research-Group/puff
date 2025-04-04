@@ -5,7 +5,7 @@
 \title{Simulate Atmospheric Concentration on a Grid}
 \usage{
 simulate_grid_mode(start_time, end_time, source_coords, emission_rate, wind_data,
-  grid_coords, sim_dt, puff_dt, output_dt, puff_duration)
+  grid_coords, sim_dt, puff_dt, output_dt, puff_duration, ws, wd)
 }
 \arguments{
 \item{start_time}{POSIXct. Start time of the simulation.}

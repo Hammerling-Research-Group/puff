@@ -5,6 +5,9 @@
 #' each puff maintains a constant wind speed and direction throughout its lifetime. The function
 #' accounts for puff dispersion based on wind conditions and atmospheric stability class.
 #'
+#' @usage simulate_sensor_mode(start_time, end_time, source_coords, emission_rate, wind_data,
+#'   sensor_coords, sim_dt, puff_dt, output_dt, puff_duration, ws, wd)
+#'
 #' @param start_time POSIXct. Start time of the simulation.
 #' @param end_time POSIXct. End time of the simulation.
 #' @param source_coords Numeric vector or matrix. Source coordinates in meters (x, y, z). If a single source,

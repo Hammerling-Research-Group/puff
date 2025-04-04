@@ -109,7 +109,7 @@ create_site_map(sensor_coords,
 
 Finally, here's a look at running and visualizing in grid mode: 
 
-```{r}
+```{r echo = TRUE, eval = FALSE}
 set.seed(123)
 
 sim_dt <- 2

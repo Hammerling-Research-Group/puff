@@ -4,20 +4,8 @@
 \alias{simulate_sensor_mode}
 \title{Simulate Atmospheric Concentration at Sensor Locations}
 \usage{
-simulate_sensor_mode(
-  start_time,
-  end_time,
-  source_coords,
-  emission_rate,
-  wind_data,
-  sensor_coords,
-  sim_dt = 1,
-  puff_dt = 1,
-  output_dt,
-  puff_duration = 1200,
-  ws = NULL,
-  wd = NULL
-)
+simulate_sensor_mode(start_time, end_time, source_coords, emission_rate, wind_data,
+  sensor_coords, sim_dt, puff_dt, output_dt, puff_duration, ws, wd)
 }
 \arguments{
 \item{start_time}{POSIXct. Start time of the simulation.}

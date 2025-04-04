@@ -5,7 +5,7 @@
 #' throughout its lifetime, and corresponding dispersion parameters are determined at the time of emission.
 #'
 #' @usage simulate_grid_mode(start_time, end_time, source_coords, emission_rate, wind_data,
-#'   grid_coords, sim_dt, puff_dt, output_dt, puff_duration)
+#'   grid_coords, sim_dt, puff_dt, output_dt, puff_duration, ws, wd)
 #'
 #' @param start_time POSIXct. Start time of the simulation.
 #' @param end_time POSIXct. End time of the simulation.
