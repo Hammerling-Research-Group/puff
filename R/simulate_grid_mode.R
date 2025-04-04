@@ -14,8 +14,11 @@
 #'   E.g., \code{matrix(c(0, 0, 2.5, 10, 10, 2.5), ncol = 3, byrow = TRUE)}.
 #' @param emission_rate Numeric. Emission rate in kg/hr per source. If multiple sources are provided, this
 #'   value will be assumed the same for each. (Note: source-specific rates are not yet supported.)
-#' @param wind_data Data frame. Must contain columns \code{wind_u} and \code{wind_v},
-#'   representing the wind components in the x and y directions for each simulation time step.
+#' @param wind_data Data frame. Must contain either columns `wind_u` and `wind_v` (wind vector components in x/y directions)
+#'   or columns representing wind speed and direction, declared as `ws` and `wd`.
+#' @param ws Optional. String. Name of the column in `wind_data` containing wind speeds (m/s).
+#'   Required if `wind_data` contains polar wind components instead of Cartesian (`wind_u`, `wind_v`).
+#' @param wd Optional. String. Name of the column in `wind_data` containing wind directions (degrees from).
 #' @param grid_coords List. A list with three numeric vectors specifying the grid points for
 #'   \code{x}, \code{y}, and \code{z} coordinates, e.g.,
 #'   \code{list(x = seq(-50, 50, by = 5), y = seq(-50, 50, by = 5), z = c(2.5))}.
@@ -23,8 +26,6 @@
 #' @param puff_dt Integer. Puff emission interval in seconds (default = 1). New puffs are emitted from each source at this frequency.
 #' @param output_dt Integer. Desired time resolution (in seconds) for final output concentrations.
 #' @param puff_duration Numeric. Maximum puff lifetime in seconds (default = 1200). Puffs beyond this age are discarded.
-#'
-#' @note If you have location data in latitude/longitude, you need to convert it to easting/northing (UTM) to get in units of meters.
 #'
 #' @note All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 #'
@@ -83,11 +84,29 @@ simulate_grid_mode <- function(start_time, end_time,
                                source_coords, emission_rate,
                                wind_data, grid_coords,
                                sim_dt = 1, puff_dt = 1, output_dt,
-                               puff_duration = 1200) {
+                               puff_duration = 1200,
+                               ws = NULL,
+                               wd = NULL) {
 
   if (!is.data.frame(wind_data)) stop("`wind_data` must be a data frame.")
   if (is.numeric(source_coords) && is.null(dim(source_coords))) {
     source_coords <- matrix(source_coords, nrow = 1)
+  }
+
+  if (!is.null(ws) && !is.null(wd)) {
+    if (!all(c(ws, wd) %in% names(wind_data))) {
+      stop("Specified `ws` and/or `wd` not found in `wind_data`.")
+    }
+    wind_components <- wind_vector_convert(
+      wind_speeds = wind_data[[ws]],
+      wind_directions = wind_data[[wd]]
+    )
+    wind_data$wind_u <- wind_components$u
+    wind_data$wind_v <- wind_components$v
+  }
+
+  if (!all(c("wind_u", "wind_v") %in% names(wind_data))) {
+    stop("`wind_data` must contain either `wind_u` and `wind_v`, or valid `ws` and `wd`.")
   }
 
   sim_timestamps <- seq(from = as.POSIXct(start_time),

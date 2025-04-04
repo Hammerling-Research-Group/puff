@@ -10,16 +10,16 @@
 #' @param source_coords Numeric vector or matrix. Source coordinates in meters (x, y, z). If a single source,
 #'   pass as a vector. For multiple sources, use a matrix where each row is a source.
 #' @param emission_rate Numeric. Emission rate from each source in kg/hr. Applied uniformly to all sources.
-#' @param wind_data Data frame. Must contain `wind_u` and `wind_v` columns representing wind speed components
-#'   in the x (east-west) and y (north-south) directions at each simulation timestep.
+#' @param wind_data Data frame. Must contain either columns `wind_u` and `wind_v` (wind vector components in x/y directions)
+#'   or columns representing wind speed and direction, declared as `ws` and `wd`.
+#' @param ws Optional character. If your `wind_data` uses wind speed and direction instead of `wind_u`/`wind_v`, supply the name of the wind speed column here (e.g., `"ws"` or `"wind_speed"`).
+#' @param wd Optional character. If your `wind_data` uses wind direction in degrees, supply the name of the wind direction column here (e.g., `"wd"` or `"wind_direction"`).
 #' @param sensor_coords Numeric matrix. Sensor coordinates in meters (x, y, z); one row per sensor.
 #' @param sim_dt Integer. Simulation time step in seconds (default: 1). Controls how often the simulation
 #'   updates concentrations.
 #' @param puff_dt Integer. Puff emission interval in seconds (default: 1). Controls how often a new puff is emitted.
 #' @param output_dt Integer. Desired resolution in seconds for output concentrations.
 #' @param puff_duration Numeric. Lifetime of each puff in seconds (default: 1200). Puffs are removed after this time.
-#'
-#' @note If you have location data in latitude/longitude, you need to convert it to easting/northing (UTM) to get in units of meters.
 #'
 #' @note All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 #'
@@ -77,10 +77,12 @@
 #' }
 #' @export
 simulate_sensor_mode <- function(start_time, end_time,
-                                  source_coords, emission_rate,
-                                  wind_data, sensor_coords,
-                                  sim_dt = 1, puff_dt = 1, output_dt,
-                                  puff_duration = 1200) {
+                                 source_coords, emission_rate,
+                                 wind_data, sensor_coords,
+                                 sim_dt = 1, puff_dt = 1, output_dt,
+                                 puff_duration = 1200,
+                                 ws = NULL,
+                                 wd = NULL) {
 
   if (!is.data.frame(wind_data)) {
     stop("`wind_data` must be a data frame or tibble.")
@@ -94,6 +96,25 @@ simulate_sensor_mode <- function(start_time, end_time,
     stop("`source_coords` must be a numeric vector of length 3 or a matrix with 3 columns (x, y, z).")
   }
 
+  # handle wind input explicitly: extract u/v or convert speed/direction
+  has_uv <- all(c("wind_u", "wind_v") %in% names(wind_data))
+  has_speed_dir <- !is.null(ws) && !is.null(wd) &&
+    all(c(ws, wd) %in% names(wind_data))
+
+  if (has_uv) {
+    wind_u <- wind_data$wind_u
+    wind_v <- wind_data$wind_v
+  } else if (has_speed_dir) {
+    wind_speeds <- wind_data[[ws]]
+    wind_dirs <- wind_data[[wd]]
+    wind_components <- wind_vector_convert(wind_speeds, wind_dirs)
+    wind_u <- wind_components$u
+    wind_v <- wind_components$v
+  } else {
+    stop("`wind_data` must contain either `wind_u` and `wind_v`, or valid `ws` and `wd`.")
+  }
+
+  # time setup
   sim_timestamps <- seq(from = as.POSIXct(start_time),
                         to = as.POSIXct(end_time),
                         by = sim_dt)
@@ -111,7 +132,6 @@ simulate_sensor_mode <- function(start_time, end_time,
   total_concentrations <- matrix(0, nrow = n_steps, ncol = n_sensors,
                                  dimnames = list(NULL, paste0("Sensor_", 1:n_sensors)))
 
-  # loop over each source
   for (src_idx in seq_len(nrow(source_coords))) {
     src <- source_coords[src_idx, ]
 
@@ -131,18 +151,18 @@ simulate_sensor_mode <- function(start_time, end_time,
       current_time <- sim_timestamps[t_idx]
       current_elapsed <- as.numeric(difftime(current_time, start_time, units = "secs"))
 
-      # emit new puff
+      wind_u_t <- wind_u[t_idx]
+      wind_v_t <- wind_v[t_idx]
+      wind_speed <- sqrt(wind_u_t^2 + wind_v_t^2)
+
       if (t_idx == 1 || current_elapsed %% puff_dt == 0) {
-        wind_u <- wind_data$wind_u[t_idx]
-        wind_v <- wind_data$wind_v[t_idx]
-        wind_speed <- sqrt(wind_u^2 + wind_v^2)
         stab_class <- get_stab_class(wind_speed, current_time)
         q_per_puff <- (emission_rate / 3600) * puff_dt
 
         new_puff <- data.frame(
           time_emitted = current_elapsed,
-          wind_u = wind_u,
-          wind_v = wind_v,
+          wind_u = wind_u_t,
+          wind_v = wind_v_t,
           wind_speed = wind_speed,
           stab_class = as.character(stab_class),
           mass = q_per_puff,
@@ -185,11 +205,9 @@ simulate_sensor_mode <- function(start_time, end_time,
       concentrations[t_idx, ] <- rowSums(sensor_contributions)
     }
 
-    # agg concentration across all sources
     total_concentrations <- total_concentrations + concentrations
   }
 
-  # aggregate to match output_dt
   c <- aggregate(total_concentrations,
                  by = list(cut(sim_timestamps, breaks = output_timestamps)),
                  FUN = mean)
@@ -197,3 +215,4 @@ simulate_sensor_mode <- function(start_time, end_time,
 
   return(c)
 }
+

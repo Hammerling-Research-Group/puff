@@ -14,7 +14,9 @@ simulate_sensor_mode(
   sim_dt = 1,
   puff_dt = 1,
   output_dt,
-  puff_duration = 1200
+  puff_duration = 1200,
+  ws = NULL,
+  wd = NULL
 )
 }
 \arguments{
@@ -27,8 +29,8 @@ pass as a vector. For multiple sources, use a matrix where each row is a source.
 
 \item{emission_rate}{Numeric. Emission rate from each source in kg/hr. Applied uniformly to all sources.}
 
-\item{wind_data}{Data frame. Must contain `wind_u` and `wind_v` columns representing wind speed components
-in the x (east-west) and y (north-south) directions at each simulation timestep.}
+\item{wind_data}{Data frame. Must contain either columns `wind_u` and `wind_v` (wind vector components in x/y directions)
+or columns representing wind speed and direction, declared as `ws` and `wd`.}
 
 \item{sensor_coords}{Numeric matrix. Sensor coordinates in meters (x, y, z); one row per sensor.}
 
@@ -40,6 +42,10 @@ updates concentrations.}
 \item{output_dt}{Integer. Desired resolution in seconds for output concentrations.}
 
 \item{puff_duration}{Numeric. Lifetime of each puff in seconds (default: 1200). Puffs are removed after this time.}
+
+\item{ws}{Optional character. If your `wind_data` uses wind speed and direction instead of `wind_u`/`wind_v`, supply the name of the wind speed column here (e.g., `"ws"` or `"wind_speed"`).}
+
+\item{wd}{Optional character. If your `wind_data` uses wind direction in degrees, supply the name of the wind direction column here (e.g., `"wd"` or `"wind_direction"`).}
 }
 \value{
 A data frame with aggregated sensor concentrations across time.
@@ -60,8 +66,6 @@ accounts for puff dispersion based on wind conditions and atmospheric stability 
 - Concentrations are aggregated into intervals matching `output_dt` before being returned.
 }
 \note{
-If you have location data in latitude/longitude, you need to convert it to easting/northing (UTM) to get in units of meters.
-
 All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 }
 \examples{

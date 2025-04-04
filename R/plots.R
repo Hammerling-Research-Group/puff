@@ -614,7 +614,7 @@ faceted_time_series_plot <- function(sensor_concentrations,
   ) |>
     dplyr::mutate(
       wind_speed = sqrt(wind_u^2 + wind_v^2),
-      angle = atan2(wind_v, wind_u) * (180 / pi),
+      angle = (atan2(wind_v, wind_u) * (180 / pi) + 180) %% 360,
       direction = dplyr::case_when(
         angle >= -22.5 & angle < 22.5   ~ "E",
         angle >= 22.5 & angle < 67.5    ~ "NE",

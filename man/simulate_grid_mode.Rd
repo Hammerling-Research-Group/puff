@@ -19,8 +19,8 @@ E.g., \code{matrix(c(0, 0, 2.5, 10, 10, 2.5), ncol = 3, byrow = TRUE)}.}
 \item{emission_rate}{Numeric. Emission rate in kg/hr per source. If multiple sources are provided, this
 value will be assumed the same for each. (Note: source-specific rates are not yet supported.)}
 
-\item{wind_data}{Data frame. Must contain columns \code{wind_u} and \code{wind_v},
-representing the wind components in the x and y directions for each simulation time step.}
+\item{wind_data}{Data frame. Must contain either columns `wind_u` and `wind_v` (wind vector components in x/y directions)
+or columns representing wind speed and direction, declared as `ws` and `wd`.}
 
 \item{grid_coords}{List. A list with three numeric vectors specifying the grid points for
 \code{x}, \code{y}, and \code{z} coordinates, e.g.,
@@ -33,6 +33,11 @@ representing the wind components in the x and y directions for each simulation t
 \item{output_dt}{Integer. Desired time resolution (in seconds) for final output concentrations.}
 
 \item{puff_duration}{Numeric. Maximum puff lifetime in seconds (default = 1200). Puffs beyond this age are discarded.}
+
+\item{ws}{Optional. String. Name of the column in `wind_data` containing wind speeds (m/s).
+Required if `wind_data` contains polar wind components instead of Cartesian (`wind_u`, `wind_v`).}
+
+\item{wd}{Optional. String. Name of the column in `wind_data` containing wind directions (degrees from).}
 }
 \value{
 A matrix of concentrations (ppm) with rows representing output time steps and columns
@@ -51,8 +56,6 @@ throughout its lifetime, and corresponding dispersion parameters are determined 
 - Concentrations are aggregated and returned at a coarser time resolution defined by \code{output_dt}.
 }
 \note{
-If you have location data in latitude/longitude, you need to convert it to easting/northing (UTM) to get in units of meters.
-
 All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 }
 \examples{
