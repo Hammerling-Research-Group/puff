@@ -30,7 +30,7 @@ Let's walk through a basic use case for the `puff` package. To do so, we will co
   
 For each of these "modes", the workflow typically includes something like running the simulation to produce emission concentration values (either at individual *sensor* locations or over the full *grid* of the site), and then plot the results in a variety of ways with a variety of views. The latter task is at the heart of this package, which is the ability to produce accurate, clean, and publication-ready plots. Therefore, this vignette focuses mostly on the plotting capabilities of `puff` rather than the simulation / modeling part. 
 
-## Run the Simulation
+## Sensor Mode
 
 Let's start simply with an example in sensor mode via `simulate_sensor_mode()`. 
 
@@ -79,8 +79,6 @@ out |>
   head()
 ```
 
-## Plot the Results 
-
 Now, there are a variety of plotting options for the sensor mode. We will start with a simple time series via `time_series_plot()`:
 
 ```{r, fig.align='center', out.width='100%', fig.width=12, fig.height=8}
@@ -106,6 +104,54 @@ create_site_map(sensor_coords,
 ```
 
 *Note*: all plots are of `ggplot` class. As such, users can further customize and adjust plots in any way that they might any other `ggplot` object (e.g., changing labels, colors, sizes, and so on).
+
+## Grid Mode
+
+Finally, here's a look at running and visualizing in grid mode: 
+
+```{r}
+set.seed(123)
+
+sim_dt <- 2
+puff_dt <- 2
+output_dt <- 60
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+source_coords <- c(0, 0, 2.5)
+emission_rate <- 5
+wind_data <- data.frame(
+    wind_u = runif(3601, min = -2, max = 0.7),
+    wind_v = runif(3601, min = -2, max = 1.5)
+)
+
+grid_coords <- list(
+  x = seq(-2, 2, by = 1),
+  y = seq(-2, 2, by = 1),
+  z = c(2.5)
+)
+
+
+out <- simulate_grid_mode(
+  start_time = start_time,
+  end_time = end_time,
+  source_coords = source_coords,
+  emission_rate = emission_rate,
+  wind_data = wind_data,
+  grid_coords = grid_coords,
+  sim_dt = sim_dt,
+  puff_dt = puff_dt,
+  output_dt = output_dt,
+  puff_duration = 1200
+  )
+
+plot_2d_animated(
+  out, grid_coords, 
+  start_time, end_time, output_dt,
+  frames = 200,
+  transition = 199,
+  interpolate_grid = TRUE
+  )
+```
 
 ## Concluding Remarks
 
