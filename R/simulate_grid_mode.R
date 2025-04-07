@@ -39,33 +39,28 @@
 #' - Concentration contributions from all active puffs are computed at each grid point and summed.
 #' - Concentrations are aggregated and returned at a coarser time resolution defined by \code{output_dt}.
 #'
-#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024.
-#'   Filling a critical need: a lightweight and fast Gaussian puff model implementation.
-#'   doi: <10.26434/chemrxiv-2023-hc95q-v3>
+#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 #'
 #' @examples
-#' \dontrun{
-#'   set.seed(123)
+#' set.seed(123)
 #'
-#'   sim_dt <- 10
-#'   puff_dt <- 10
-#'   output_dt <- 60
-#'   start_time <- as.POSIXct("2024-01-01 12:00:00")
-#'   end_time <- as.POSIXct("2024-01-01 13:00:00")
+#' sim_dt <- 7
+#' puff_dt <- 7
+#' output_dt <- 60
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' source_coords <- c(0, 0, 2.5)
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
+#'   wind_u = runif(3601, min = -3, max = 0.7),
+#'   wind_v = runif(3601, min = -3, max = 1.5)
+#' )
 #'
-#'   source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
-#'   emission_rate <- 3.5
-#'   wind_data <- data.frame(
-#'     wind_u = runif(3601, min = -3, max = 0.7),
-#'     wind_v = runif(3601, min = -3, max = 1.5)
-#'   )
-#'
-#'   grid_coords <- list(
-#'     x = seq(-10, 10, by = 5),
-#'     y = seq(-10, 10, by = 5),
-#'     z = c(2.5)
-#'   )
-#'
+#' grid_coords <- list(
+#'   x = seq(-2, 2, by = 1),
+#'   y = seq(-2, 2, by = 1),
+#'   z = c(2.5)
+#' )
 #'   out <- simulate_grid_mode(
 #'     start_time = start_time,
 #'     end_time = end_time,
@@ -78,7 +73,6 @@
 #'     output_dt = output_dt,
 #'     puff_duration = 1200
 #'   )
-#' }
 #' @export
 simulate_grid_mode <- function(start_time, end_time,
                                source_coords, emission_rate,

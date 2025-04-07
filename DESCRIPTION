@@ -11,9 +11,11 @@ Authors@R:
     )
 Description: Simulate and run the Gaussian puff forward atmospheric
     model in sensor (specific sensor coordinates) or grid (across the
-    grid of a full oil and gas operations site) modes. Numerous 
-    visualization options, including static and animated, 2D and 3D, 
-    and a site map generator based on sensor and source coordinates.
+    grid of a full oil and gas operations site) modes, following Jia, M., 
+    Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) 
+    <doi:10.26434/chemrxiv-2023-hc95q-v3>. Numerous visualization options, 
+    including static and animated, 2D and 3D, and a site map generator 
+    based on sensor and source coordinates.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

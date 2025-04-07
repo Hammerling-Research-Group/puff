@@ -59,28 +59,25 @@ throughout its lifetime, and corresponding dispersion parameters are determined 
 All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 }
 \examples{
-\dontrun{
-  set.seed(123)
+set.seed(123)
 
-  sim_dt <- 10
-  puff_dt <- 10
-  output_dt <- 60
-  start_time <- as.POSIXct("2024-01-01 12:00:00")
-  end_time <- as.POSIXct("2024-01-01 13:00:00")
+sim_dt <- 7
+puff_dt <- 7
+output_dt <- 60
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+source_coords <- c(0, 0, 2.5)
+emission_rate <- 3.5
+wind_data <- data.frame(
+  wind_u = runif(3601, min = -3, max = 0.7),
+  wind_v = runif(3601, min = -3, max = 1.5)
+)
 
-  source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
-  emission_rate <- 3.5
-  wind_data <- data.frame(
-    wind_u = runif(3601, min = -3, max = 0.7),
-    wind_v = runif(3601, min = -3, max = 1.5)
-  )
-
-  grid_coords <- list(
-    x = seq(-10, 10, by = 5),
-    y = seq(-10, 10, by = 5),
-    z = c(2.5)
-  )
-
+grid_coords <- list(
+  x = seq(-2, 2, by = 1),
+  y = seq(-2, 2, by = 1),
+  z = c(2.5)
+)
   out <- simulate_grid_mode(
     start_time = start_time,
     end_time = end_time,
@@ -94,9 +91,6 @@ All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > si
     puff_duration = 1200
   )
 }
-}
 \references{
-Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024.
-  Filling a critical need: a lightweight and fast Gaussian puff model implementation.
-  doi: <10.26434/chemrxiv-2023-hc95q-v3>
+Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 }
