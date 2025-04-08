@@ -40,40 +40,40 @@
 #' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 #'
 #' @examples
-#'   set.seed(123)
-#'   sim_dt <- 10
-#'   puff_dt <- 10
-#'   output_dt <- 60
-#'   start_time <- as.POSIXct("2024-01-01 12:00:00")
-#'   end_time <- as.POSIXct("2024-01-01 13:00:00")
+#' set.seed(123)
+#' sim_dt <- 10
+#' puff_dt <- 10
+#' output_dt <- 60
+#' start_time <- as.POSIXct("2024-01-01 12:00:00")
+#' end_time <- as.POSIXct("2024-01-01 13:00:00")
 #'
-#'   source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
+#' source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
 #'
-#'   sensor_coords <- matrix(c(
+#' sensor_coords <- matrix(c(
 #'    -20, 0, 2.0,
 #'      0, -20, 2.0,
 #'     20, 0, 2.0,
 #'      0, 20, 2.0,
 #'     10, 10, 2.0
-#'   ), ncol = 3, byrow = TRUE)
+#' ), ncol = 3, byrow = TRUE)
 #'
-#'   wind_data <- data.frame(
-#'     wind_u = runif(3601, min = -3, max = 0.7),
-#'     wind_v = runif(3601, min = -3, max = 1.5)
-#'   )
+#' wind_data <- data.frame(
+#'    wind_u = runif(3601, min = -3, max = 0.7),
+#'    wind_v = runif(3601, min = -3, max = 1.5)
+#' )
 #'
-#'   out <- simulate_sensor_mode(
-#'     start_time = start_time,
-#'     end_time = end_time,
-#'     source_coords = source_coords,
-#'     emission_rate = 3.5,
-#'     wind_data = wind_data,
-#'     sensor_coords = sensor_coords,
-#'     sim_dt = sim_dt,
-#'     puff_dt = puff_dt,
-#'     output_dt = output_dt,
-#'     puff_duration = 1200
-#'   )
+#' out <- simulate_sensor_mode(
+#'    start_time = start_time,
+#'    end_time = end_time,
+#'    source_coords = source_coords,
+#'    emission_rate = 3.5,
+#'    wind_data = wind_data,
+#'    sensor_coords = sensor_coords,
+#'    sim_dt = sim_dt,
+#'    puff_dt = puff_dt,
+#'    output_dt = output_dt,
+#'    puff_duration = 1200
+#' )
 #' @export
 simulate_sensor_mode <- function(start_time, end_time,
                                  source_coords, emission_rate,
@@ -214,4 +214,3 @@ simulate_sensor_mode <- function(start_time, end_time,
 
   return(c)
 }
-

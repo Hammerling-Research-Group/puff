@@ -57,45 +57,41 @@ accounts for puff dispersion based on wind conditions and atmospheric stability 
 All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 }
 \examples{
-\dontrun{
-  set.seed(123)
-  sim_dt <- 10
-  puff_dt <- 10
-  output_dt <- 60
-  start_time <- as.POSIXct("2024-01-01 12:00:00")
-  end_time <- as.POSIXct("2024-01-01 13:00:00")
+set.seed(123)
+sim_dt <- 10
+puff_dt <- 10
+output_dt <- 60
+start_time <- as.POSIXct("2024-01-01 12:00:00")
+end_time <- as.POSIXct("2024-01-01 13:00:00")
 
-  source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
+source_coords <- matrix(c(0, 0, 2.5), ncol = 3, byrow = TRUE)
 
-  sensor_coords <- matrix(c(
+sensor_coords <- matrix(c(
    -20, 0, 2.0,
      0, -20, 2.0,
     20, 0, 2.0,
      0, 20, 2.0,
     10, 10, 2.0
-  ), ncol = 3, byrow = TRUE)
+), ncol = 3, byrow = TRUE)
 
-  wind_data <- data.frame(
-    wind_u = runif(3601, min = -3, max = 0.7),
-    wind_v = runif(3601, min = -3, max = 1.5)
-  )
+wind_data <- data.frame(
+   wind_u = runif(3601, min = -3, max = 0.7),
+   wind_v = runif(3601, min = -3, max = 1.5)
+)
 
-  out <- simulate_sensor_mode(
-    start_time = start_time,
-    end_time = end_time,
-    source_coords = source_coords,
-    emission_rate = 3.5,
-    wind_data = wind_data,
-    sensor_coords = sensor_coords,
-    sim_dt = sim_dt,
-    puff_dt = puff_dt,
-    output_dt = output_dt,
-    puff_duration = 1200
-  )
-}
+out <- simulate_sensor_mode(
+   start_time = start_time,
+   end_time = end_time,
+   source_coords = source_coords,
+   emission_rate = 3.5,
+   wind_data = wind_data,
+   sensor_coords = sensor_coords,
+   sim_dt = sim_dt,
+   puff_dt = puff_dt,
+   output_dt = output_dt,
+   puff_duration = 1200
+)
 }
 \references{
-Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024.
-  Filling a critical need: a lightweight and fast Gaussian puff model implementation.
-  doi: <10.26434/chemrxiv-2023-hc95q-v3>
+Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 }

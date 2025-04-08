@@ -20,7 +20,6 @@ A patchwork-combined ggplot object: site map + compass rose.
 This function generates a site map with an adjacent compass rose.
 }
 \examples{
-\dontrun{
 source_coords <- c(0, 0, 2.5)
 
 n_sensors <- 8
@@ -35,5 +34,4 @@ sensor_coords <- matrix(
 )
 
 create_site_map(sensor_coords, source_coords)
-}
 }

@@ -18,6 +18,7 @@
 #' @return A `plotly` object representing the animated heatmap.
 #'
 #' @examples
+#' \dontrun{
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #'
@@ -27,6 +28,7 @@
 #'   end = "2025-01-01 01:00:00",
 #'   output_dt = "1 min"
 #'   )
+#' }
 #' @export
 plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
                              frames = 100, transition = 99,
@@ -171,10 +173,13 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #' plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",
-#'                  "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour", save = TRUE)
+#'                  "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour",
+#'                  save = TRUE)
+#' }
 plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
                              frames = 100, transition = 99, plot_type = "contour", save = FALSE) {
   # chk: pkgs
@@ -350,14 +355,26 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @return A ggplot object showing sensor concentrations over time, faceted by sensor.
 #'
 #' @examples
-#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
+#' set.seed(123)
+#' sim_dt <- 10
+#' puff_dt <- 10
+#' output_dt <- 60
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
+#'   wind_u = runif(3601, min = -3, max = 0.7),
+#'   wind_v = runif(3601, min = -3, max = 1.5)
+#' )
+#' source_coords <- c(0, 0, 2.5)
+#' sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
 #'
-#' sensor_coords <- matrix(c(
-#'   -6.525403221327715e-15, -35.52264, 2.01775,
-#'   -2.15, -33.52264, 2
-#'  ), ncol = 3, byrow = TRUE)
+#' out <- simulate_sensor_mode(
+#'   start_time, end_time, source_coords,
+#'   emission_rate, wind_data, sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
+#' )
 #'
-#' single_emission_rate_plot(sensor_concentrations, sensor_coords)
+#' single_emission_rate_plot(out, sensor_coords)
 #' @export
 single_emission_rate_plot <- function(sensor_concentrations, sensor_coords, text_size = 12) {
 
@@ -441,8 +458,26 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords, text
 #' @return A ggplot object showing the time series of sensor concentrations.
 #'
 #' @examples
-#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
-#' time_series_plot(sensor_concentrations)
+#' set.seed(123)
+#' sim_dt <- 10
+#' puff_dt <- 10
+#' output_dt <- 60
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
+#'   wind_u = runif(3601, min = -3, max = 0.7),
+#'   wind_v = runif(3601, min = -3, max = 1.5)
+#' )
+#' source_coords <- c(0, 0, 2.5)
+#' sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+#'
+#' out <- simulate_sensor_mode(
+#'   start_time, end_time, source_coords,
+#'   emission_rate, wind_data, sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
+#' )
+#'
+#' time_series_plot(out)
 #' @export
 time_series_plot <- function(sensor_concentrations, text_size = 12) {
 
@@ -510,23 +545,29 @@ time_series_plot <- function(sensor_concentrations, text_size = 12) {
 #' @return A ggplot object: faceted concentration plot + single wind rose plot.
 #'
 #' @examples
-#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
+#' set.seed(123)
+#' sim_dt <- 10
+#' puff_dt <- 10
 #' output_dt <- 60
-#' start_time <- as.POSIXct("2024-01-01 12:00:00")
-#' end_time <- as.POSIXct("2024-01-01 13:00:00")
-#' wind_data <- list(
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
 #'   wind_u = runif(3601, min = -3, max = 0.7),
 #'   wind_v = runif(3601, min = -3, max = 1.5)
-#'   )
-#'
-#' sensor_coords <- matrix(c(
-#' -6.525403221327715e-15, -35.52264, 2.01775,
-#' -2.15, -33.52264, 2
-#' ), ncol = 3, byrow = TRUE)
-#'
-#' faceted_time_series_plot(sensor_concentrations, sensor_coords,
-#' wind_data, start_time, end_time, output_dt
 #' )
+#' source_coords <- c(0, 0, 2.5)
+#' sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+#'
+#' out <- simulate_sensor_mode(
+#'   start_time, end_time, source_coords,
+#'   emission_rate, wind_data, sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
+#' )
+#'
+#' faceted_time_series_plot(out, sensor_coords,
+#'   wind_data, as.POSIXct(start_time), as.POSIXct(end_time),
+#'   output_dt
+#'   )
 #' @export
 faceted_time_series_plot <- function(sensor_concentrations,
                                      sensor_coords,
@@ -675,18 +716,29 @@ faceted_time_series_plot <- function(sensor_concentrations,
 #' @return A ggplot object with faceted time series plots of methane concentrations and wind rose data.
 #'
 #' @examples
-#' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
+#' set.seed(123)
+#' sim_dt <- 10
+#' puff_dt <- 10
 #' output_dt <- 60
-#' start_time <- as.POSIXct("2024-01-01 12:00:00")
-#' end_time <- as.POSIXct("2024-01-01 13:00:00")
-#' wind_data <- list(
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
 #'   wind_u = runif(3601, min = -3, max = 0.7),
 #'   wind_v = runif(3601, min = -3, max = 1.5)
-#'   )
-#'
-#' faceted_time_series_plot2(sensor_concentrations, sensor_coords,
-#' wind_data, start_time, end_time, output_dt
 #' )
+#' source_coords <- c(0, 0, 2.5)
+#' sensor_coords <- matrix(c(-6.525403221327715e-15, -35.52264, 2.01775), ncol = 3, byrow = TRUE)
+#'
+#' out <- simulate_sensor_mode(
+#'   start_time, end_time, source_coords,
+#'   emission_rate, wind_data, sensor_coords, sim_dt, puff_dt, output_dt, puff_duration = 1200
+#' )
+#'
+#' faceted_time_series_plot2(out, sensor_coords,
+#'   wind_data, as.POSIXct(start_time), as.POSIXct(end_time),
+#'   output_dt
+#'   )
 #' @export
 faceted_time_series_plot2 <- function(sensor_concentrations,
                                       sensor_coords,

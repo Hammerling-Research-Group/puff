@@ -48,6 +48,7 @@ from `simulate_grid_mode()` output.
 grid_concentrations <- array(...)  # 3D concentration array
 grid_coords <- list(x = ..., y = ..., z = ...)
 plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",
-                 "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour", save = TRUE)
+                 "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour",
+                 save = TRUE)
 }
 }
