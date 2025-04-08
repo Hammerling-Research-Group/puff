@@ -4,9 +4,7 @@
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character T or F representing whether or not it is daytime.
 #' @examples
-#' \dontrun{
 #' out <- is_day(8)
-#' }
 #' @export
 is_day <- function(time){
 
@@ -28,9 +26,7 @@ is_day <- function(time){
 #' @param time A time value that is used to determine whether it's day or night.
 #' @return A character vector representing the stability class(es) ("A" to "F").
 #' @examples
-#' \dontrun{
 #' out <- get_stab_class(3, 12)
-#' }
 #' @export
 get_stab_class <- function(U, time){
 
@@ -69,9 +65,7 @@ get_stab_class <- function(U, time){
 #' @param total_dist Numeric vector of distances in km (must match length of stab_class or be scalar)
 #' @return 2-row matrix with sigma_y (row 1) and sigma_z (row 2) values
 #' @examples
-#' \dontrun{
 #' out <- compute_sigma_vals(A, 0.7)
-#' }
 #' @export
 compute_sigma_vals <- function(stab_class, total_dist) {
   # chks: validate inputs
@@ -173,9 +167,7 @@ compute_sigma_vals <- function(stab_class, total_dist) {
 #' the conventional definition: 0 -> wind blowing from North, 90 -> E, 180 -> S, 270 -> W
 #' @return Quantities corresponding to the conversion direction
 #' @examples
-#' \dontrun{
 #' out <- wind_vector_convert(speed_vec,direction_vec)
-#' }
 #' @export
 wind_vector_convert <- function(wind_speeds, wind_directions) {
 
@@ -198,13 +190,11 @@ wind_vector_convert <- function(wind_speeds, wind_directions) {
 #' @param puff_dt A scalar time interval between two puffs
 #' @return Quantities corresponding to the conversion direction
 #' @examples
-#' \dontrun{
 #' speed_vec <- c(1,2,3)
 #' direction_vec <- c(1,2,3)
 #' out <- interpolate_wind_data(speed_vec, direction_vec,
 #'                               "2024-01-01 11:00:00", "2024-01-01 12:00:00",
 #'                               60)
-#' }
 #' @export
 interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_end, puff_dt) {
 
@@ -247,9 +237,7 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #'
 #' @return Numeric. Pollutant concentration at the specified (x, y, z) locations and time `t`.
 #' @examples
-#' \dontrun{
 #' out <- gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
-#' }
 #' @export
 gpuff <- function(Q, stab_class,
                   x_p, y_p,
