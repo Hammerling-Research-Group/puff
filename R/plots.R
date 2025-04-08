@@ -18,7 +18,6 @@
 #' @return A `plotly` object representing the animated heatmap.
 #'
 #' @examples
-#' \dontrun{
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #'
@@ -28,7 +27,6 @@
 #'   end = "2025-01-01 01:00:00",
 #'   output_dt = "1 min"
 #'   )
-#' }
 #' @export
 plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
                              frames = 100, transition = 99,
@@ -173,12 +171,10 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #' plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",
 #'                  "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour", save = TRUE)
-#' }
 plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
                              frames = 100, transition = 99, plot_type = "contour", save = FALSE) {
   # chk: pkgs
@@ -354,7 +350,6 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @return A ggplot object showing sensor concentrations over time, faceted by sensor.
 #'
 #' @examples
-#' \dontrun{
 #' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
 #'
 #' sensor_coords <- matrix(c(
@@ -363,7 +358,6 @@ plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
 #'  ), ncol = 3, byrow = TRUE)
 #'
 #' single_emission_rate_plot(sensor_concentrations, sensor_coords)
-#' }
 #' @export
 single_emission_rate_plot <- function(sensor_concentrations, sensor_coords, text_size = 12) {
 
@@ -447,10 +441,8 @@ single_emission_rate_plot <- function(sensor_concentrations, sensor_coords, text
 #' @return A ggplot object showing the time series of sensor concentrations.
 #'
 #' @examples
-#' \dontrun{
 #' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode
 #' time_series_plot(sensor_concentrations)
-#' }
 #' @export
 time_series_plot <- function(sensor_concentrations, text_size = 12) {
 
@@ -518,7 +510,6 @@ time_series_plot <- function(sensor_concentrations, text_size = 12) {
 #' @return A ggplot object: faceted concentration plot + single wind rose plot.
 #'
 #' @examples
-#' \dontrun{
 #' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
 #' output_dt <- 60
 #' start_time <- as.POSIXct("2024-01-01 12:00:00")
@@ -536,7 +527,6 @@ time_series_plot <- function(sensor_concentrations, text_size = 12) {
 #' faceted_time_series_plot(sensor_concentrations, sensor_coords,
 #' wind_data, start_time, end_time, output_dt
 #' )
-#' }
 #' @export
 faceted_time_series_plot <- function(sensor_concentrations,
                                      sensor_coords,
@@ -685,7 +675,6 @@ faceted_time_series_plot <- function(sensor_concentrations,
 #' @return A ggplot object with faceted time series plots of methane concentrations and wind rose data.
 #'
 #' @examples
-#' \dontrun{
 #' # Assuming 'sensor_concentrations' is a data frame obtained from simulate_sensor_mode()
 #' output_dt <- 60
 #' start_time <- as.POSIXct("2024-01-01 12:00:00")
@@ -698,7 +687,6 @@ faceted_time_series_plot <- function(sensor_concentrations,
 #' faceted_time_series_plot2(sensor_concentrations, sensor_coords,
 #' wind_data, start_time, end_time, output_dt
 #' )
-#' }
 #' @export
 faceted_time_series_plot2 <- function(sensor_concentrations,
                                       sensor_coords,
@@ -881,7 +869,6 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
 #' @return A patchwork-combined ggplot object: site map + compass rose.
 #'
 #' @examples
-#' \dontrun{
 #' source_coords <- c(0, 0, 2.5)
 #'
 #' n_sensors <- 8
@@ -896,7 +883,6 @@ faceted_time_series_plot2 <- function(sensor_concentrations,
 #' )
 #'
 #' create_site_map(sensor_coords, source_coords)
-#' }
 #' @export
 create_site_map <- function(sensors, sources, text_size = 12) {
   for (pkg in c("ggplot2", "patchwork")) {
