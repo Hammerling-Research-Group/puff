@@ -1,6 +1,6 @@
 # basic lint for multiple R versions
 
-name: R
+name: R build
 
 on:
   push:
