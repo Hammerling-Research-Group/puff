@@ -25,9 +25,7 @@ Quantities corresponding to the conversion direction
 Resample wind_speeds and wind_directions to the simulation resolution by interpolation
 }
 \examples{
-speed_vec <- c(1,2,3)
-direction_vec <- c(1,2,3)
-out <- interpolate_wind_data(speed_vec, direction_vec,
-                              "2024-01-01 11:00:00", "2024-01-01 12:00:00",
-                              60)
+out <- interpolate_wind_data(c(2, 3), c(90, 180),
+  "2024-01-01 00:00:00", "2024-01-01 01:00:00", 300
+)
 }

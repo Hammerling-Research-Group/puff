@@ -19,5 +19,5 @@ Quantities corresponding to the conversion direction
 This function converts between coordinate systems by changing from degrees to radians
 }
 \examples{
-out <- wind_vector_convert(speed_vec,direction_vec)
+out <- wind_vector_convert(c(5, 10), c(0, 90))
 }

@@ -37,5 +37,8 @@ This function uses wind speed and direction components, advection adjustments, a
   accurately measure the dispersion of a puff in the atmosphere.
 }
 \examples{
-out <- gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
+out <- gpuff(Q = 1, stab_class = "D", x_p = 0, y_p = 0,
+  x_r_vec = 100, y_r_vec = 0, z_r_vec = 2,
+  total_dist = 100, H = 2, U = 5
+)
 }

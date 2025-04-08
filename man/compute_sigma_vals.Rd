@@ -18,5 +18,5 @@ compute_sigma_vals(stab_class, total_dist)
 Compute Sigma Values Based on Stability Class and Distance
 }
 \examples{
-out <- compute_sigma_vals(A, 0.7)
+out <- compute_sigma_vals("A", 0.7)
 }

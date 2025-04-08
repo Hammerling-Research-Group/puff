@@ -65,7 +65,7 @@ get_stab_class <- function(U, time){
 #' @param total_dist Numeric vector of distances in km (must match length of stab_class or be scalar)
 #' @return 2-row matrix with sigma_y (row 1) and sigma_z (row 2) values
 #' @examples
-#' out <- compute_sigma_vals(A, 0.7)
+#' out <- compute_sigma_vals("A", 0.7)
 #' @export
 compute_sigma_vals <- function(stab_class, total_dist) {
   # chks: validate inputs
@@ -167,7 +167,7 @@ compute_sigma_vals <- function(stab_class, total_dist) {
 #' the conventional definition: 0 -> wind blowing from North, 90 -> E, 180 -> S, 270 -> W
 #' @return Quantities corresponding to the conversion direction
 #' @examples
-#' out <- wind_vector_convert(speed_vec,direction_vec)
+#' out <- wind_vector_convert(c(5, 10), c(0, 90))
 #' @export
 wind_vector_convert <- function(wind_speeds, wind_directions) {
 
@@ -190,11 +190,9 @@ wind_vector_convert <- function(wind_speeds, wind_directions) {
 #' @param puff_dt A scalar time interval between two puffs
 #' @return Quantities corresponding to the conversion direction
 #' @examples
-#' speed_vec <- c(1,2,3)
-#' direction_vec <- c(1,2,3)
-#' out <- interpolate_wind_data(speed_vec, direction_vec,
-#'                               "2024-01-01 11:00:00", "2024-01-01 12:00:00",
-#'                               60)
+#' out <- interpolate_wind_data(c(2, 3), c(90, 180),
+#'   "2024-01-01 00:00:00", "2024-01-01 01:00:00", 300
+#' )
 #' @export
 interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_end, puff_dt) {
 
@@ -237,7 +235,10 @@ interpolate_wind_data <- function(wind_speeds, wind_directions, sim_start, sim_e
 #'
 #' @return Numeric. Pollutant concentration at the specified (x, y, z) locations and time `t`.
 #' @examples
-#' out <- gpuff(Q, stab_class, x_p, y_p, x_r_vec, y_r_vec, z_r_vec, total_dist, H, U)
+#' out <- gpuff(Q = 1, stab_class = "D", x_p = 0, y_p = 0,
+#'   x_r_vec = 100, y_r_vec = 0, z_r_vec = 2,
+#'   total_dist = 100, H = 2, U = 5
+#' )
 #' @export
 gpuff <- function(Q, stab_class,
                   x_p, y_p,
