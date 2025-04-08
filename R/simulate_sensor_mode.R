@@ -37,12 +37,9 @@
 #' - Total sensor concentration is the sum of all active puff contributions at each timestep.
 #' - Concentrations are aggregated into intervals matching `output_dt` before being returned.
 #'
-#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D., 2024.
-#'   Filling a critical need: a lightweight and fast Gaussian puff model implementation.
-#'   doi: <10.26434/chemrxiv-2023-hc95q-v3>
+#' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 #'
 #' @examples
-#' \dontrun{
 #'   set.seed(123)
 #'   sim_dt <- 10
 #'   puff_dt <- 10
@@ -77,7 +74,6 @@
 #'     output_dt = output_dt,
 #'     puff_duration = 1200
 #'   )
-#' }
 #' @export
 simulate_sensor_mode <- function(start_time, end_time,
                                  source_coords, emission_rate,
