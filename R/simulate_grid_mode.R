@@ -42,6 +42,7 @@
 #' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 #'
 #' @examples
+#' \dontrun{
 #' set.seed(123)
 #'
 #' sim_dt <- 7
@@ -73,6 +74,7 @@
 #'     output_dt = output_dt,
 #'     puff_duration = 1200
 #'   )
+#' }
 #' @export
 simulate_grid_mode <- function(start_time, end_time,
                                source_coords, emission_rate,
