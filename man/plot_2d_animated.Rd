@@ -47,7 +47,7 @@ movement of a plume over time. The animation is based on grid concentration data
 from `simulate_grid_mode()` output.
 }
 \examples{
-\dontrun{
+\donttest{
 grid_concentrations <- array(...)  # 3D concentration array
 grid_coords <- list(x = ..., y = ..., z = ...)
 

@@ -42,7 +42,7 @@
 #' @references Jia, M., Fish, R., Daniels, W., Sprinkle, B. and Hammerling, D. (2024) <doi:10.26434/chemrxiv-2023-hc95q-v3>
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' set.seed(123)
 #'
 #' sim_dt <- 7

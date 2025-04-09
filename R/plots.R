@@ -18,7 +18,7 @@
 #' @return A `plotly` object representing the animated heatmap.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #'
@@ -173,7 +173,7 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' grid_concentrations <- array(...)  # 3D concentration array
 #' grid_coords <- list(x = ..., y = ..., z = ...)
 #' plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",

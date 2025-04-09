@@ -59,7 +59,7 @@ throughout its lifetime, and corresponding dispersion parameters are determined 
 All time parameters should be positive, with `puff_dt > sim_dt` and `out_dt > sim_dt`. Also, `puff_dt` should be a positive integer multiple of `sim_dt`, i.e. `puff_dt = n*sim_dt` for some positive integer `n`. This prevents the code having to interpolate the concentration values in time, although it is likely that this constraint could be avoided.
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(123)
 
 sim_dt <- 7
