@@ -19,15 +19,44 @@
 #'
 #' @examples
 #' \donttest{
-#' grid_concentrations <- array(...)  # 3D concentration array
-#' grid_coords <- list(x = ..., y = ..., z = ...)
+#' set.seed(123)
 #'
-#' plot_2d_animated(data = grid_concentrations,
+#' sim_dt <- 10
+#' puff_dt <- 10
+#' output_dt <- 60
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' source_coords <- c(0, 0, 2.5)
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
+#'   wind_u = runif(3601, min = -3, max = 0.7),
+#'   wind_v = runif(3601, min = -3, max = 1.5)
+#' )
+#'
+#' grid_coords <- list(
+#'   x = seq(-2, 2, by = 1),
+#'   y = seq(-2, 2, by = 1),
+#'   z = seq(0, 5, by = 1)
+#' )
+#'
+#' out <- simulate_grid_mode(
+#'   start_time = start_time,
+#'   end_time = end_time,
+#'   source_coords = source_coords,
+#'   emission_rate = emission_rate,
+#'   wind_data = wind_data,
 #'   grid_coords = grid_coords,
-#'   start = "2025-01-01 00:00:00",
-#'   end = "2025-01-01 01:00:00",
-#'   output_dt = "1 min"
-#'   )
+#'   sim_dt = sim_dt,
+#'   puff_dt = puff_dt,
+#'   output_dt = output_dt,
+#'   puff_duration = 1200
+#' )
+#'
+#' plot_2d_animated(data = out,
+#'   grid_coords = grid_coords,
+#'   start = start_time,
+#'   end = end_time,
+#'   output_dt = output_dt)
 #' }
 #' @export
 plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
@@ -66,13 +95,25 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
   # build concentration df
   concentration_data <- data.frame()
 
+  z_index <- 1
+  n_x <- length(x_coords)
+  n_y <- length(y_coords)
+  n_z <- length(z_coords)
+
   for (t_idx in seq_along(time_stamps)) {
-    grid_concentration <- matrix(data[t_idx, ], nrow = length(x_coords), ncol = length(y_coords))
+    values_at_t <- data[t_idx, ]  # should be length n_x * n_y * n_z
+
+    slice_start <- (z_index - 1) * n_x * n_y + 1
+    slice_end <- z_index * n_x * n_y
+    slice_values <- values_at_t[slice_start:slice_end]
+
+    grid_concentration <- matrix(slice_values, nrow = n_x, ncol = n_y)
+
     if (ncol(grid_concentration) != length(y_coords)) {
       warning("Mismatch between the dimensions of 'data' and the grid coordinates. Check your inputs.")
     }
 
-    long_data <- expand.grid(x = x_coords, y = y_coords, z = z_coords)
+    long_data <- expand.grid(x = x_coords, y = y_coords)
     long_data$concentration <- as.vector(grid_concentration)
     long_data$time <- as.numeric(t_idx)
 
@@ -174,11 +215,43 @@ plot_2d_animated <- function(data, grid_coords, start, end, output_dt,
 #'
 #' @examples
 #' \donttest{
-#' grid_concentrations <- array(...)  # 3D concentration array
-#' grid_coords <- list(x = ..., y = ..., z = ...)
-#' plot_3d_animated(grid_concentrations, grid_coords, "2025-01-01 00:00:00",
-#'                  "2025-01-01 01:00:00", "1 min", 100, 99, plot_type = "contour",
-#'                  save = TRUE)
+#' set.seed(123)
+#'
+#' sim_dt <- 10
+#' puff_dt <- 10
+#' output_dt <- 60
+#' start_time <- "2024-01-01 12:00:00"
+#' end_time <- "2024-01-01 13:00:00"
+#' source_coords <- c(0, 0, 2.5)
+#' emission_rate <- 3.5
+#' wind_data <- data.frame(
+#'   wind_u = runif(3601, min = -3, max = 0.7),
+#'   wind_v = runif(3601, min = -3, max = 1.5)
+#' )
+#'
+#' grid_coords <- list(
+#'   x = seq(-2, 2, by = 1),
+#'   y = seq(-2, 2, by = 1),
+#'   z = seq(0, 5, by = 1)
+#' )
+#'
+#' out <- simulate_grid_mode(
+#'   start_time = start_time,
+#'   end_time = end_time,
+#'   source_coords = source_coords,
+#'   emission_rate = emission_rate,
+#'   wind_data = wind_data,
+#'   grid_coords = grid_coords,
+#'   sim_dt = sim_dt,
+#'   puff_dt = puff_dt,
+#'   output_dt = output_dt,
+#'   puff_duration = 1200
+#' )
+#'
+#' plot_3d_animated(out,
+#'    grid_coords,
+#'    start_time, end_time,
+#'    output_dt)
 #' }
 plot_3d_animated <- function(data, grid_coords, start, end, output_dt,
                              frames = 100, transition = 99, plot_type = "contour", save = FALSE) {

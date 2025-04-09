@@ -48,14 +48,43 @@ from `simulate_grid_mode()` output.
 }
 \examples{
 \donttest{
-grid_concentrations <- array(...)  # 3D concentration array
-grid_coords <- list(x = ..., y = ..., z = ...)
+set.seed(123)
 
-plot_2d_animated(data = grid_concentrations,
+sim_dt <- 10
+puff_dt <- 10
+output_dt <- 60
+start_time <- "2024-01-01 12:00:00"
+end_time <- "2024-01-01 13:00:00"
+source_coords <- c(0, 0, 2.5)
+emission_rate <- 3.5
+wind_data <- data.frame(
+  wind_u = runif(3601, min = -3, max = 0.7),
+  wind_v = runif(3601, min = -3, max = 1.5)
+)
+
+grid_coords <- list(
+  x = seq(-2, 2, by = 1),
+  y = seq(-2, 2, by = 1),
+  z = seq(0, 5, by = 1)
+)
+
+out <- simulate_grid_mode(
+  start_time = start_time,
+  end_time = end_time,
+  source_coords = source_coords,
+  emission_rate = emission_rate,
+  wind_data = wind_data,
   grid_coords = grid_coords,
-  start = "2025-01-01 00:00:00",
-  end = "2025-01-01 01:00:00",
-  output_dt = "1 min"
-  )
+  sim_dt = sim_dt,
+  puff_dt = puff_dt,
+  output_dt = output_dt,
+  puff_duration = 1200
+)
+
+plot_2d_animated(data = out,
+  grid_coords = grid_coords,
+  start = start_time,
+  end = end_time,
+  output_dt = output_dt)
 }
 }
