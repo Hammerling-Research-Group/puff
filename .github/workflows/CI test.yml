@@ -24,6 +24,7 @@ jobs:
         Rscript -e 'install.packages("plotly")'
         Rscript -e 'install.packages("scales")'
         Rscript -e 'install.packages("tidyselect")'
+        Rscript -e 'install.packages("testthat")'
 
     - name: Run tests
       run: |
