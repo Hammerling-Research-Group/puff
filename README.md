@@ -3,7 +3,8 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/puff)](http://cran.r-project.org/package=puff) 
 [![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/puff)](https://cran.r-project.org/package=puff)
-[![R](https://github.com/Hammerling-Research-Group/puff/actions/workflows/r.yml/badge.svg)](https://github.com/Hammerling-Research-Group/puff/actions/workflows/r.yml)
+[![CI lint](https://github.com/Hammerling-Research-Group/puff/actions/workflows/lint.yml/badge.svg)](https://github.com/Hammerling-Research-Group/puff/actions/workflows/lint.yml)
+[![CI tests](https://github.com/Hammerling-Research-Group/puff/actions/workflows/test.yml/badge.svg)](https://github.com/Hammerling-Research-Group/puff/actions/workflows/test.yml)
 [![GitHub contributors](https://img.shields.io/github/contributors/Hammerling-Research-Group/puff.svg)](https://github.com/Hammerling-Research-Group/puff/graphs/contributors/)
 
 The `puff` package is primarily a visualization-focused package aimed at offering many ways to visualize emission dispersion plumes given some site-level information (e.g., wind conditions, emission rate, etc.). 
