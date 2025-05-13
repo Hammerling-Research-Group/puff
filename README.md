@@ -1,4 +1,4 @@
-# Gaussian Puff Model
+# Visualizing the Gaussian Puff Atmospheric Model
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/puff)](http://cran.r-project.org/package=puff) 
