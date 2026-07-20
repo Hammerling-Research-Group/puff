@@ -1,13 +1,14 @@
 Package: puff
 Title: Simulate and Visualize the Gaussian Puff Forward Atmospheric Model
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     c(
     person("Teagan", "Ward", email = "teaganward@mines.edu", role = "aut"),
-    person("Philip", "Waggoner", email = "philip.waggoner@mines.edu", role = c("aut", "cre")),
+    person("Philip", "Waggoner", email = "philip.waggoner@mines.edu", role = c("aut")),
     person("Will", "Daniels", email = "wdaniels@mines.edu", role = c("aut")),
     person("Meng", "Jia", email = "mjia@mines.edu", role = c("aut")),
-    person("Dorit", "Hammerling", email = "hammerling@mines.edu", role = c("aut", "ths"))
+    person("Dorit", "Hammerling", email = "hammerling@mines.edu", role = c("aut", "ths")),
+    person("Callan", "Okenberg", email = "cal_okenberg@mines.edu", role = c("cre"))
     )
 Description: Simulate and run the Gaussian puff forward atmospheric
     model in sensor (specific sensor coordinates) or grid (across the
